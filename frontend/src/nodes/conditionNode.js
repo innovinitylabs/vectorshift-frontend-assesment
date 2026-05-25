@@ -6,19 +6,19 @@ import { distributedContentTops } from './handleLayout';
 const [trueTop, falseTop] = distributedContentTops(2);
 
 const CONDITION_HANDLES = [
+  { type: 'target', position: Position.Left, idSuffix: 'input' },
   {
-    type: 'target',
-    position: Position.Left,
+    type: 'source',
+    position: Position.Right,
     idSuffix: 'true',
     style: { top: trueTop },
   },
   {
-    type: 'target',
-    position: Position.Left,
+    type: 'source',
+    position: Position.Right,
     idSuffix: 'false',
     style: { top: falseTop },
   },
-  { type: 'source', position: Position.Right, idSuffix: 'result' },
 ];
 
 export const ConditionNode = ({ id }) => {
@@ -29,7 +29,7 @@ export const ConditionNode = ({ id }) => {
       id={id}
       title="Condition"
       handles={CONDITION_HANDLES}
-      className="node--tall"
+      className="node--compact"
     >
       <div className="node-field">
         <label className="node-label">Operator</label>
