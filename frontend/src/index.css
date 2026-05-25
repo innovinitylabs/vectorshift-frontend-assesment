@@ -8,6 +8,12 @@
   --accent: #38bdf8;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -15,6 +21,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--canvas-bg);
   color: var(--text-primary);
+  overflow: hidden;
 }
 
 code {

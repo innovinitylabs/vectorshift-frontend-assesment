@@ -1,18 +1,75 @@
 .pipeline-app {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: #0b1120;
 }
 
+.pipeline-workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .pipeline-toolbar {
+  flex-shrink: 0;
   padding: 10px 16px;
   background: #111827;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.pipeline-toolbar__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .pipeline-toolbar__nodes {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar-toggle {
+  flex-shrink: 0;
+  padding: 0 12px;
+  height: 36px;
+  font-family: 'Syne', 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.toolbar-toggle:hover {
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.toolbar-toggle--on {
+  color: #0f172a;
+  background: rgba(56, 189, 248, 0.85);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.toolbar-toggle--on:hover {
+  color: #0f172a;
+  background: #7dd3fc;
 }
 
 .draggable-node {
@@ -55,18 +112,29 @@
 }
 
 .pipeline-canvas {
-  width: 100vw;
-  height: 70vh;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
   background: #0b1120;
 }
 
-.submit-bar {
+.pipeline-canvas .react-flow {
+  width: 100%;
+  height: 100%;
+}
+
+.pipeline-action-bar {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 16px 18px;
+  padding: 12px 16px;
   background: #111827;
   border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.submit-bar {
+  display: contents;
 }
 
 .submit-bar__button {
@@ -120,7 +188,7 @@
   position: relative;
   width: 100%;
   max-width: 380px;
-  padding: 28px 24px 24px;
+  padding: 26px 22px 22px;
   background: #111827;
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 14px;

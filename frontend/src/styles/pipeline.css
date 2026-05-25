@@ -2,7 +2,7 @@
 
 .pipeline-canvas .react-flow {
   --flow-edge: #38bdf8;
-  --flow-edge-glow: rgba(56, 189, 248, 0.35);
+  --flow-edge-glow: rgba(56, 189, 248, 0.18);
   --flow-handle: #22d3ee;
   --flow-handle-ring: #0f172a;
 }
@@ -14,13 +14,13 @@
 .pipeline-canvas .react-flow__edge-path {
   stroke: var(--flow-edge);
   stroke-width: 2;
-  filter: drop-shadow(0 0 2px var(--flow-edge-glow));
+  filter: drop-shadow(0 0 1px var(--flow-edge-glow));
 }
 
 .pipeline-canvas .react-flow__connection-path {
   stroke: var(--flow-edge);
   stroke-width: 2;
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 .pipeline-canvas .react-flow__handle {
@@ -29,23 +29,23 @@
   background: var(--flow-handle);
   border: 2px solid var(--flow-handle-ring);
   box-shadow:
-    0 0 0 1px rgba(34, 211, 238, 0.4),
-    0 0 10px rgba(34, 211, 238, 0.35);
+    0 0 0 1px rgba(34, 211, 238, 0.25),
+    0 0 6px rgba(34, 211, 238, 0.2);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .pipeline-canvas .react-flow__handle:hover {
-  transform: scale(1.15);
+  transform: scale(1.12);
   box-shadow:
-    0 0 0 2px rgba(34, 211, 238, 0.5),
-    0 0 14px rgba(34, 211, 238, 0.45);
+    0 0 0 1px rgba(34, 211, 238, 0.35),
+    0 0 8px rgba(34, 211, 238, 0.28);
 }
 
 .pipeline-canvas .react-flow__controls {
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .pipeline-canvas .react-flow__controls-button {
@@ -59,6 +59,20 @@
 .pipeline-canvas .react-flow__controls-button:hover {
   background: #243044;
   fill: #e2e8f0;
+}
+
+.pipeline-canvas .react-flow__minimap.pipeline-minimap {
+  width: 118px;
+  height: 88px;
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 8px;
+  opacity: 0.88;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.pipeline-canvas .react-flow__minimap svg {
+  border-radius: 7px;
 }
 
 .pipeline-canvas .react-flow__attribution {
