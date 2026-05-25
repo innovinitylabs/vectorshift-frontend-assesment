@@ -61,6 +61,8 @@ export const PipelineUI = ({
   const reactFlowWrapper = useRef(null);
   const deleteDockRef = useRef(null);
   const edgeReconnectSucceededRef = useRef(false);
+  const draggingNodeIdRef = useRef(null);
+  const deleteZoneHoverRef = useRef(false);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [draggingNodeId, setDraggingNodeId] = useState(null);
   const [deleteZoneHover, setDeleteZoneHover] = useState(false);
@@ -87,6 +89,42 @@ export const PipelineUI = ({
       updatable: true,
     }),
     []
+  );
+
+  const nodesForCanvas = useMemo(
+    () =>
+      nodes.map((node) => {
+        if (node.id !== draggingNodeId || !deleteZoneHover) {
+          return node;
+        }
+
+        return {
+          ...node,
+          className: [node.className, 'pipeline-node--delete-capture']
+            .filter(Boolean)
+            .join(' '),
+        };
+      }),
+    [nodes, draggingNodeId, deleteZoneHover]
+  );
+
+  const handleNodesChange = useCallback(
+    (changes) => {
+      const dragNodeId = draggingNodeIdRef.current;
+      if (deleteZoneHoverRef.current && dragNodeId) {
+        const filtered = changes.filter(
+          (change) => !(change.type === 'position' && change.id === dragNodeId)
+        );
+        if (filtered.length !== changes.length) {
+          if (filtered.length > 0) {
+            onNodesChange(filtered);
+          }
+          return;
+        }
+      }
+      onNodesChange(changes);
+    },
+    [onNodesChange]
   );
 
   const edgesForCanvas = useMemo(
@@ -206,6 +244,8 @@ export const PipelineUI = ({
   const onNodeDragStart = useCallback(
     (_event, node) => {
       if (!isInteractive) return;
+      draggingNodeIdRef.current = node.id;
+      deleteZoneHoverRef.current = false;
       setDraggingNodeId(node.id);
       setDeleteZoneHover(false);
     },
@@ -214,10 +254,14 @@ export const PipelineUI = ({
 
   const onNodeDrag = useCallback(
     (event) => {
-      if (!draggingNodeId) return;
-      setDeleteZoneHover(isPointInDeleteDock(event.clientX, event.clientY));
+      const dragNodeId = draggingNodeIdRef.current;
+      if (!dragNodeId) return;
+
+      const inDeleteDock = isPointInDeleteDock(event.clientX, event.clientY);
+      deleteZoneHoverRef.current = inDeleteDock;
+      setDeleteZoneHover(inDeleteDock);
     },
-    [draggingNodeId, isPointInDeleteDock]
+    [isPointInDeleteDock]
   );
 
   const onNodeDragStop = useCallback(
@@ -225,6 +269,8 @@ export const PipelineUI = ({
       if (isPointInDeleteDock(event.clientX, event.clientY)) {
         removeNode(node.id);
       }
+      draggingNodeIdRef.current = null;
+      deleteZoneHoverRef.current = false;
       setDraggingNodeId(null);
       setDeleteZoneHover(false);
     },
@@ -284,9 +330,9 @@ export const PipelineUI = ({
   return (
     <div ref={reactFlowWrapper} className="pipeline-canvas">
       <ReactFlow
-        nodes={nodes}
+        nodes={nodesForCanvas}
         edges={edgesForCanvas}
-        onNodesChange={onNodesChange}
+        onNodesChange={handleNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         isValidConnection={isValidConnection}

@@ -384,7 +384,12 @@
 }
 
 .pipeline-delete-dock.is-drop-target {
-  transform: scale(1.12);
+  transform: scale(1.14);
+}
+
+.pipeline-canvas .react-flow__node.pipeline-node--delete-capture {
+  opacity: 0.72;
+  transition: opacity 0.12s ease;
 }
 
 .pipeline-edge-menu {
