@@ -2,8 +2,8 @@
 // Displays the drag-and-drop UI
 // --------------------------------------------------
 
-import { useState, useRef, useCallback } from 'react';
-import ReactFlow, { Background, MiniMap } from 'reactflow';
+import { useState, useRef, useCallback, useMemo } from 'react';
+import ReactFlow, { Background, MiniMap, MarkerType } from 'reactflow';
 import { useStore } from './store';
 import { shallow } from 'zustand/shallow';
 import { InputNode } from './nodes/inputNode';
@@ -16,6 +16,12 @@ import { DelayNode } from './nodes/delayNode';
 import { MathNode } from './nodes/mathNode';
 import { MergeNode } from './nodes/mergeNode';
 import { PipelineControls } from './PipelineControls';
+import {
+  buildSplitEdges,
+  findNearestEdge,
+  isInsertModifierHeld,
+  resolveHandlesForInsert,
+} from './edgeInsert';
 import './styles/toolbar.css';
 import './styles/pipeline.css';
 import 'reactflow/dist/style.css';
@@ -23,6 +29,15 @@ import 'reactflow/dist/style.css';
 const gridSize = 20;
 const backgroundGap = 32;
 const proOptions = { hideAttribution: true };
+const defaultEdgeOptions = {
+  type: 'smoothstep',
+  animated: true,
+  markerEnd: {
+    type: MarkerType.Arrow,
+    height: '20px',
+    width: '20px',
+  },
+};
 const nodeTypes = {
   customInput: InputNode,
   llm: LLMNode,
@@ -40,6 +55,7 @@ const selector = (state) => ({
   edges: state.edges,
   getNodeID: state.getNodeID,
   addNode: state.addNode,
+  insertNodeOnEdge: state.insertNodeOnEdge,
   onNodesChange: state.onNodesChange,
   onEdgesChange: state.onEdgesChange,
   onConnect: state.onConnect,
@@ -57,24 +73,41 @@ export const PipelineUI = ({
 }) => {
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const [insertCandidateEdgeId, setInsertCandidateEdgeId] = useState(null);
   const {
     nodes,
     edges,
     getNodeID,
     addNode,
+    insertNodeOnEdge,
     onNodesChange,
     onEdgesChange,
     onConnect,
   } = useStore(selector, shallow);
+
+  const edgesForRender = useMemo(
+    () =>
+      edges.map((edge) =>
+        edge.id === insertCandidateEdgeId
+          ? { ...edge, className: 'edge-insert-candidate' }
+          : edge
+      ),
+    [edges, insertCandidateEdgeId]
+  );
 
   const getInitNodeData = (nodeID, type) => {
     const nodeData = { id: nodeID, nodeType: `${type}` };
     return nodeData;
   };
 
+  const clearInsertHighlight = useCallback(() => {
+    setInsertCandidateEdgeId(null);
+  }, []);
+
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
+      clearInsertHighlight();
 
       if (!isInteractive) {
         onLockedDragAttempt?.();
@@ -82,58 +115,105 @@ export const PipelineUI = ({
       }
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      if (event?.dataTransfer?.getData('application/reactflow')) {
-        const appData = JSON.parse(
-          event.dataTransfer.getData('application/reactflow')
-        );
-        const type = appData?.nodeType;
+      const raw = event?.dataTransfer?.getData('application/reactflow');
+      if (!raw) return;
 
-        if (typeof type === 'undefined' || !type) {
-          return;
+      const appData = JSON.parse(raw);
+      const type = appData?.nodeType;
+      if (typeof type === 'undefined' || !type) return;
+
+      const position = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+
+      const nodeID = getNodeID(type);
+      const newNode = {
+        id: nodeID,
+        type,
+        position,
+        data: getInitNodeData(nodeID, type),
+      };
+
+      const modifierHeld = isInsertModifierHeld(event);
+      if (modifierHeld) {
+        const nearestEdge = findNearestEdge(position, nodes, edges);
+        const handles = resolveHandlesForInsert(type, nodeID);
+
+        if (nearestEdge && handles) {
+          const splitEdges = buildSplitEdges(nearestEdge, nodeID, handles);
+          const inserted = insertNodeOnEdge({
+            node: newNode,
+            edge: nearestEdge,
+            splitEdges,
+          });
+          if (inserted) return;
         }
-
-        const position = reactFlowInstance.project({
-          x: event.clientX - reactFlowBounds.left,
-          y: event.clientY - reactFlowBounds.top,
-        });
-
-        const nodeID = getNodeID(type);
-        const newNode = {
-          id: nodeID,
-          type,
-          position,
-          data: getInitNodeData(nodeID, type),
-        };
-
-        addNode(newNode);
       }
+
+      addNode(newNode);
     },
     [
       isInteractive,
       reactFlowInstance,
       getNodeID,
       addNode,
+      insertNodeOnEdge,
+      nodes,
+      edges,
       onLockedDragAttempt,
+      clearInsertHighlight,
     ]
   );
 
   const onDragOver = useCallback(
     (event) => {
       event.preventDefault();
-      if (isInteractive) {
-        event.dataTransfer.dropEffect = 'move';
-      } else {
+
+      if (!isInteractive) {
         event.dataTransfer.dropEffect = 'none';
+        clearInsertHighlight();
+        return;
       }
+
+      const hasPalettePayload = event.dataTransfer.types.includes(
+        'application/reactflow'
+      );
+
+      if (!hasPalettePayload) {
+        clearInsertHighlight();
+        event.dataTransfer.dropEffect = 'move';
+        return;
+      }
+
+      event.dataTransfer.dropEffect = 'move';
+
+      if (!isInsertModifierHeld(event) || !reactFlowInstance) {
+        clearInsertHighlight();
+        return;
+      }
+
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const flowPoint = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+
+      const nearest = findNearestEdge(flowPoint, nodes, edges);
+      setInsertCandidateEdgeId(nearest?.id ?? null);
     },
-    [isInteractive]
+    [isInteractive, reactFlowInstance, nodes, edges, clearInsertHighlight]
   );
 
   return (
-    <div ref={reactFlowWrapper} className="pipeline-canvas">
+    <div
+      ref={reactFlowWrapper}
+      className={`pipeline-canvas${insertCandidateEdgeId ? ' pipeline-canvas--edge-insert' : ''}`}
+      onDragLeave={clearInsertHighlight}
+    >
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={edgesForRender}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
@@ -148,10 +228,7 @@ export const PipelineUI = ({
         nodesConnectable={isInteractive}
         elementsSelectable={isInteractive}
         connectionLineType="smoothstep"
-        defaultEdgeOptions={{
-          type: 'smoothstep',
-          animated: true,
-        }}
+        defaultEdgeOptions={defaultEdgeOptions}
       >
         <Background
           color="#334155"

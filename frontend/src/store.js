@@ -25,6 +25,17 @@ export const useStore = create((set, get) => ({
             nodes: [...get().nodes, node]
         });
     },
+    insertNodeOnEdge: ({ node, edge, splitEdges }) => {
+        if (!edge || !splitEdges?.length) return false;
+        set({
+            nodes: [...get().nodes, node],
+            edges: [
+                ...get().edges.filter((e) => e.id !== edge.id),
+                ...splitEdges,
+            ],
+        });
+        return true;
+    },
     onNodesChange: (changes) => {
       set({
         nodes: applyNodeChanges(changes, get().nodes),
