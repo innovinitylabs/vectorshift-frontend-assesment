@@ -8,15 +8,24 @@ The application lets you compose node-based pipelines on a canvas, connect steps
 
 ## Implemented Features
 
+### Core assessment
+
 - **BaseNode abstraction** — shared shell, header, and config-driven handles for all node types
 - **Five demonstration nodes** — API, Condition, Delay, Math, and Merge (in addition to Input, Output, LLM, and Text)
-- **Dynamic TextNode handles** — `{{variable}}` parsing creates deduplicated left-side target handles
+- **Dynamic TextNode handles** — `{{variable}}` parsing creates deduplicated left-side target handles; handle geometry refreshes when variables change
 - **Autosizing Text node** — textarea grows with content within sensible bounds
 - **DAG validation** — `POST /pipelines/parse` returns node count, edge count, and `is_dag`
-- **Workflow UI** — dark theme, toolbar palette with drag previews, snap-to-grid, polished controls dock
+
+### Workflow editor UX
+
+- **Dark theme** — toolbar palette with drag previews, snap-to-grid, polished controls dock
 - **Minimap** — bottom-right overview with hover expansion
 - **Lock mode** — disables canvas interaction with clear affordance feedback
-- **Contextual delete dock** — top-right drop target appears while dragging a node to remove it and its edges
+- **Keyboard shortcuts** — fit view (`F`), zoom (`=` / `-`), snap grid (`G`), lock (`L`), collapse controls (`Tab`); shortcuts are suppressed while typing in inputs
+- **Contextual delete dock** — top-right drop target while dragging a node; position stabilizes when hovering the dock so deletion feels intentional
+- **Edge interactions** — select and delete with keyboard; drag to reconnect or detach; one incoming edge per target handle (Merge allows multiple)
+- **Edge enable/disable** — right-click an edge to mute a connection (grey, no animation) without removing it; disabled edges are omitted from DAG submission
+- **Edge context menu** — disable/enable connection and delete connection
 
 ## Tech Stack
 
