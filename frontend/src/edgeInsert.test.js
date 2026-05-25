@@ -1,6 +1,7 @@
 import {
   canNodeTypeAutoInsert,
   EDGE_INSERT_THRESHOLD,
+  findNearestEdge,
   resolveHandlesForInsert,
 } from './edgeInsert';
 
@@ -26,7 +27,19 @@ describe('edge auto-insert eligibility', () => {
   });
 
   test('uses a forgiving but bounded midpoint threshold', () => {
-    expect(EDGE_INSERT_THRESHOLD).toBeGreaterThanOrEqual(120);
-    expect(EDGE_INSERT_THRESHOLD).toBeLessThanOrEqual(125);
+    expect(EDGE_INSERT_THRESHOLD).toBeGreaterThanOrEqual(92);
+    expect(EDGE_INSERT_THRESHOLD).toBeLessThanOrEqual(104);
+  });
+
+  test('findNearestEdge uses measured node dimensions for midpoint geometry', () => {
+    const nodes = [
+      { id: 'a', position: { x: 0, y: 0 }, measured: { width: 240, height: 120 } },
+      { id: 'b', position: { x: 300, y: 0 }, measured: { width: 240, height: 120 } },
+    ];
+    const edges = [{ id: 'e1', source: 'a', target: 'b' }];
+    const midpoint = { x: 270, y: 60 };
+
+    expect(findNearestEdge(midpoint, nodes, edges, 40)).toEqual(edges[0]);
+    expect(findNearestEdge({ x: 200, y: 44 }, nodes, edges, 40)).toBeNull();
   });
 });

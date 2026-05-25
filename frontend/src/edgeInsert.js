@@ -6,8 +6,8 @@ const defaultMarkerEnd = {
   width: '20px',
 };
 
-/** Approximate node center for midpoint geometry (flow coordinates). */
-const NODE_CENTER_OFFSET = { x: 100, y: 44 };
+const DEFAULT_NODE_WIDTH = 200;
+const DEFAULT_NODE_HEIGHT = 80;
 
 const INSERTABLE_NODE_HANDLES = {
   llm: { target: 'prompt', source: 'response' },
@@ -18,12 +18,20 @@ const INSERTABLE_NODE_HANDLES = {
   merge: { target: 'in1', source: 'out' },
 };
 
-export const EDGE_INSERT_THRESHOLD = 124;
+export const EDGE_INSERT_THRESHOLD = 98;
 
-const nodeCenter = (node) => ({
-  x: node.position.x + NODE_CENTER_OFFSET.x,
-  y: node.position.y + NODE_CENTER_OFFSET.y,
+const getNodeDimensions = (node) => ({
+  width: node.measured?.width ?? node.width ?? DEFAULT_NODE_WIDTH,
+  height: node.measured?.height ?? node.height ?? DEFAULT_NODE_HEIGHT,
 });
+
+const nodeCenter = (node) => {
+  const { width, height } = getNodeDimensions(node);
+  return {
+    x: node.position.x + width / 2,
+    y: node.position.y + height / 2,
+  };
+};
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
