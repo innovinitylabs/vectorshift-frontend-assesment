@@ -40,6 +40,7 @@ const selector = (state) => ({
   edges: state.edges,
   getNodeID: state.getNodeID,
   addNode: state.addNode,
+  removeNode: state.removeNode,
   onNodesChange: state.onNodesChange,
   onEdgesChange: state.onEdgesChange,
   onConnect: state.onConnect,
@@ -56,16 +57,33 @@ export const PipelineUI = ({
   onLockedDragAttempt,
 }) => {
   const reactFlowWrapper = useRef(null);
+  const deleteDockRef = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const [draggingNodeId, setDraggingNodeId] = useState(null);
+  const [deleteZoneHover, setDeleteZoneHover] = useState(false);
   const {
     nodes,
     edges,
     getNodeID,
     addNode,
+    removeNode,
     onNodesChange,
     onEdgesChange,
     onConnect,
   } = useStore(selector, shallow);
+
+  const isPointInDeleteDock = useCallback((clientX, clientY) => {
+    const dock = deleteDockRef.current;
+    if (!dock) return false;
+
+    const rect = dock.getBoundingClientRect();
+    return (
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom
+    );
+  }, []);
 
   const getInitNodeData = (nodeID, type) => {
     const nodeData = { id: nodeID, nodeType: `${type}` };
@@ -129,6 +147,42 @@ export const PipelineUI = ({
     [isInteractive]
   );
 
+  const onNodeDragStart = useCallback(
+    (_event, node) => {
+      if (!isInteractive) return;
+      setDraggingNodeId(node.id);
+      setDeleteZoneHover(false);
+    },
+    [isInteractive]
+  );
+
+  const onNodeDrag = useCallback(
+    (event) => {
+      if (!draggingNodeId) return;
+      setDeleteZoneHover(isPointInDeleteDock(event.clientX, event.clientY));
+    },
+    [draggingNodeId, isPointInDeleteDock]
+  );
+
+  const onNodeDragStop = useCallback(
+    (event, node) => {
+      if (isPointInDeleteDock(event.clientX, event.clientY)) {
+        removeNode(node.id);
+      }
+      setDraggingNodeId(null);
+      setDeleteZoneHover(false);
+    },
+    [isPointInDeleteDock, removeNode]
+  );
+
+  const deleteDockClassName = [
+    'pipeline-delete-dock',
+    draggingNodeId ? 'is-active' : '',
+    deleteZoneHover ? 'is-drop-target' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div ref={reactFlowWrapper} className="pipeline-canvas">
       <ReactFlow
@@ -139,6 +193,9 @@ export const PipelineUI = ({
         onConnect={onConnect}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
         onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
         proOptions={proOptions}
@@ -182,6 +239,26 @@ export const PipelineUI = ({
           zoomable
         />
       </ReactFlow>
+      <div
+        ref={deleteDockRef}
+        className={deleteDockClassName}
+        aria-hidden={!draggingNodeId}
+        aria-label="Drop node here to delete"
+      >
+        <svg
+          className="pipeline-delete-dock__icon"
+          viewBox="0 0 24 24"
+          width="18"
+          height="18"
+          aria-hidden="true"
+        >
+          <path
+            fill="currentColor"
+            d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm3 0h2v9h-2V9zm-6 0h2v9H7V9zM6 20h12v2H6v-2z"
+          />
+        </svg>
+        <span className="pipeline-delete-dock__label">Delete</span>
+      </div>
     </div>
   );
 };
