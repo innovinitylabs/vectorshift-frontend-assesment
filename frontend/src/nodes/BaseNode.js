@@ -54,7 +54,7 @@ export const BaseNode = ({
                 className={`node-handle-label node-handle-label--${
                   isLeft ? 'left' : 'right'
                 }`}
-                style={{ top: style.top }}
+                style={{ '--handle-label-top': style.top }}
               >
                 {handle.label}
               </span>

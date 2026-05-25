@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useLayoutEffect, useCallback, useEffect } from 'react';
 import { Position, useUpdateNodeInternals } from 'reactflow';
 import { BaseNode } from './BaseNode';
-import { contentRegionTop } from './handleLayout';
+import { distributedVariableTops } from './handleLayout';
 
 const VARIABLE_REGEX = /{{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*}}/g;
 
@@ -29,15 +29,13 @@ const parseVariables = (text) => {
 };
 
 const buildVariableHandles = (variables) => {
-  const count = variables.length;
+  const tops = distributedVariableTops(variables.length);
   return variables.map((name, index) => ({
     type: 'target',
     position: Position.Left,
     idSuffix: name,
     label: name,
-    style: {
-      top: contentRegionTop((index + 1) / (count + 1)),
-    },
+    style: { top: tops[index] },
   }));
 };
 

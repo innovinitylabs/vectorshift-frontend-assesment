@@ -29,3 +29,23 @@ export const distributedContentTops = (count) => {
 export const centeredContentHandleStyle = () => ({
   top: contentRegionTop(0.5),
 });
+
+/**
+ * Space N left-side variable handles with a minimum vertical gap in the content band.
+ */
+export const distributedVariableTops = (count, minFractionGap = 0.13) => {
+  if (count <= 0) return [];
+  if (count === 1) return [contentRegionTop(0.5)];
+
+  const start = 0.1;
+  const end = 0.9;
+  const span = end - start;
+  const gap = Math.max(span / (count - 1), minFractionGap);
+  const totalSpan = gap * (count - 1);
+  const bandStart = totalSpan > span ? 0.08 : start + (span - totalSpan) / 2;
+
+  return Array.from({ length: count }, (_, index) => {
+    const fraction = Math.min(0.92, bandStart + index * gap);
+    return contentRegionTop(fraction);
+  });
+};
