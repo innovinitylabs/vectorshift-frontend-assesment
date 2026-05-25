@@ -1,0 +1,128 @@
+.node {
+  --node-bg: #f8faf9;
+  --node-border: #c5d4d0;
+  --node-header-bg: #e8f0ed;
+  --node-text: #1a2e28;
+  --node-muted: #5a7268;
+  --node-accent: #0d7a6b;
+
+  min-width: 200px;
+  min-height: 80px;
+  background: var(--node-bg);
+  border: 1px solid var(--node-border);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(13, 46, 38, 0.08);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: var(--node-text);
+  overflow: visible;
+}
+
+.node--compact {
+  min-height: 80px;
+}
+
+.node--tall {
+  min-height: 110px;
+}
+
+.node--text {
+  min-height: auto;
+  height: auto;
+  width: auto;
+  min-width: 200px;
+  max-width: 420px;
+}
+
+.node-field--text {
+  width: 100%;
+}
+
+.node-textarea {
+  display: block;
+  width: 100%;
+  min-width: 168px;
+  max-width: 380px;
+  min-height: 2.5em;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  line-height: 1.4;
+  color: var(--node-text);
+  background: #fff;
+  border: 1px solid var(--node-border);
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.node-textarea:focus {
+  outline: none;
+  border-color: var(--node-accent);
+  box-shadow: 0 0 0 2px rgba(13, 122, 107, 0.15);
+}
+
+.node__header {
+  padding: 8px 12px;
+  background: var(--node-header-bg);
+  border-bottom: 1px solid var(--node-border);
+  border-radius: 7px 7px 0 0;
+}
+
+.node__title {
+  font-family: 'Syne', 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--node-accent);
+  text-transform: uppercase;
+}
+
+.node__body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.node-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--node-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.node-input,
+.node-select {
+  width: 100%;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--node-text);
+  background: #fff;
+  border: 1px solid var(--node-border);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.node-input:focus,
+.node-select:focus {
+  outline: none;
+  border-color: var(--node-accent);
+  box-shadow: 0 0 0 2px rgba(13, 122, 107, 0.15);
+}
+
+.node-description {
+  font-size: 12px;
+  color: var(--node-muted);
+  line-height: 1.4;
+}
