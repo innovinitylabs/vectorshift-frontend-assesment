@@ -2,7 +2,7 @@
 // Displays the drag-and-drop UI
 // --------------------------------------------------
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import ReactFlow, { Background, MiniMap } from 'reactflow';
 import { useStore } from './store';
 import { shallow } from 'zustand/shallow';
@@ -44,6 +44,7 @@ const selector = (state) => ({
   onNodesChange: state.onNodesChange,
   onEdgesChange: state.onEdgesChange,
   onConnect: state.onConnect,
+  isValidConnection: state.isValidConnection,
 });
 
 export const PipelineUI = ({
@@ -70,7 +71,30 @@ export const PipelineUI = ({
     onNodesChange,
     onEdgesChange,
     onConnect,
+    isValidConnection,
   } = useStore(selector, shallow);
+
+  const defaultEdgeOptions = useMemo(
+    () => ({
+      type: 'smoothstep',
+      animated: true,
+      selectable: true,
+      deletable: true,
+      focusable: true,
+    }),
+    []
+  );
+
+  const edgesForCanvas = useMemo(
+    () =>
+      edges.map((edge) => ({
+        ...edge,
+        selectable: edge.selectable ?? true,
+        deletable: edge.deletable ?? true,
+        focusable: edge.focusable ?? true,
+      })),
+    [edges]
+  );
 
   const isPointInDeleteDock = useCallback((clientX, clientY) => {
     const dock = deleteDockRef.current;
@@ -187,10 +211,11 @@ export const PipelineUI = ({
     <div ref={reactFlowWrapper} className="pipeline-canvas">
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={edgesForCanvas}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        isValidConnection={isValidConnection}
         onDrop={onDrop}
         onDragOver={onDragOver}
         onNodeDragStart={onNodeDragStart}
@@ -203,12 +228,12 @@ export const PipelineUI = ({
         snapGrid={[gridSize, gridSize]}
         nodesDraggable={isInteractive}
         nodesConnectable={isInteractive}
+        nodesFocusable={isInteractive}
+        edgesFocusable={isInteractive}
         elementsSelectable={isInteractive}
+        deleteKeyCode={isInteractive ? ['Backspace', 'Delete'] : null}
         connectionLineType="smoothstep"
-        defaultEdgeOptions={{
-          type: 'smoothstep',
-          animated: true,
-        }}
+        defaultEdgeOptions={defaultEdgeOptions}
       >
         <Background
           color="#334155"

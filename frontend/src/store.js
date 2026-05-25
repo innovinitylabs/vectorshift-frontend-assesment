@@ -44,7 +44,28 @@ export const useStore = create((set, get) => ({
         edges: applyEdgeChanges(changes, get().edges),
       });
     },
+    isValidConnection: (connection) => {
+      const { nodes, edges } = get();
+      const targetNode = nodes.find((node) => node.id === connection.target);
+
+      if (targetNode?.type === 'merge') {
+        return true;
+      }
+
+      const targetHandle = connection.targetHandle ?? null;
+      const hasIncomingOnHandle = edges.some(
+        (edge) =>
+          edge.target === connection.target &&
+          (edge.targetHandle ?? null) === targetHandle
+      );
+
+      return !hasIncomingOnHandle;
+    },
     onConnect: (connection) => {
+      if (!get().isValidConnection(connection)) {
+        return;
+      }
+
       set({
         edges: addEdge({...connection, type: 'smoothstep', animated: true, markerEnd: {type: MarkerType.Arrow, height: '20px', width: '20px'}}, get().edges),
       });
