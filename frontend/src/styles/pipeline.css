@@ -41,24 +41,148 @@
     0 0 8px rgba(34, 211, 238, 0.28);
 }
 
-.pipeline-canvas .react-flow__controls {
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+@keyframes lock-wiggle {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
 }
 
-.pipeline-canvas .react-flow__controls-button {
+.pipeline-controls--wiggle .react-flow__controls-interactive {
+  animation: lock-wiggle 0.2s ease;
+}
+
+.pipeline-controls--collapsed {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 6;
+}
+
+.pipeline-control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: #94a3b8;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.pipeline-control-btn:hover {
+  color: #e2e8f0;
+  background: #243044;
+  border-color: rgba(56, 189, 248, 0.28);
+}
+
+.pipeline-controls .react-flow__controls {
+  margin: 0;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 8px;
+  overflow: visible;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.18s ease;
+}
+
+.pipeline-controls .react-flow__controls-button {
+  position: relative;
   background: #1e293b;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   fill: #94a3b8;
   width: 28px;
   height: 28px;
+  transition:
+    background 0.18s ease,
+    fill 0.18s ease;
 }
 
-.pipeline-canvas .react-flow__controls-button:hover {
+.pipeline-controls .react-flow__controls-button:hover {
   background: #243044;
   fill: #e2e8f0;
+}
+
+.pipeline-controls .react-flow__controls-button:hover::after {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  padding: 5px 8px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: #e2e8f0;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 30;
+}
+
+.pipeline-controls .react-flow__controls-zoomin:hover::after {
+  content: 'Zoom in';
+}
+
+.pipeline-controls .react-flow__controls-zoomout:hover::after {
+  content: 'Zoom out';
+}
+
+.pipeline-controls .react-flow__controls-fitview:hover::after {
+  content: 'Fit view';
+}
+
+.pipeline-controls .react-flow__controls-interactive:hover::after {
+  content: 'Lock or unlock canvas';
+}
+
+.pipeline-control-snap.is-active {
+  background: rgba(56, 189, 248, 0.18);
+  fill: #38bdf8;
+}
+
+.pipeline-control-snap:hover::after,
+.pipeline-control-collapse:hover::after {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  padding: 5px 8px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #e2e8f0;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 30;
+}
+
+.pipeline-control-snap:hover::after {
+  content: 'Snap to grid';
+}
+
+.pipeline-control-collapse:hover::after {
+  content: 'Collapse controls';
 }
 
 .pipeline-canvas .react-flow__minimap.pipeline-minimap {

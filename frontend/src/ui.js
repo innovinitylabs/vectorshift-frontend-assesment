@@ -3,7 +3,7 @@
 // --------------------------------------------------
 
 import { useState, useRef, useCallback } from 'react';
-import ReactFlow, { Controls, Background, MiniMap } from 'reactflow';
+import ReactFlow, { Background, MiniMap } from 'reactflow';
 import { useStore } from './store';
 import { shallow } from 'zustand/shallow';
 import { InputNode } from './nodes/inputNode';
@@ -15,6 +15,7 @@ import { ConditionNode } from './nodes/conditionNode';
 import { DelayNode } from './nodes/delayNode';
 import { MathNode } from './nodes/mathNode';
 import { MergeNode } from './nodes/mergeNode';
+import { PipelineControls } from './PipelineControls';
 import './styles/toolbar.css';
 import './styles/pipeline.css';
 import 'reactflow/dist/style.css';
@@ -44,7 +45,16 @@ const selector = (state) => ({
   onConnect: state.onConnect,
 });
 
-export const PipelineUI = ({ snapToGrid = true }) => {
+export const PipelineUI = ({
+  snapToGrid = true,
+  onSnapToggle,
+  isInteractive = true,
+  onInteractiveChange,
+  controlsCollapsed = false,
+  onToggleControlsCollapse,
+  lockWiggle = false,
+  onLockedDragAttempt,
+}) => {
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const {
@@ -65,6 +75,11 @@ export const PipelineUI = ({ snapToGrid = true }) => {
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
+
+      if (!isInteractive) {
+        onLockedDragAttempt?.();
+        return;
+      }
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       if (event?.dataTransfer?.getData('application/reactflow')) {
@@ -93,13 +108,26 @@ export const PipelineUI = ({ snapToGrid = true }) => {
         addNode(newNode);
       }
     },
-    [reactFlowInstance, getNodeID, addNode]
+    [
+      isInteractive,
+      reactFlowInstance,
+      getNodeID,
+      addNode,
+      onLockedDragAttempt,
+    ]
   );
 
-  const onDragOver = useCallback((event) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }, []);
+  const onDragOver = useCallback(
+    (event) => {
+      event.preventDefault();
+      if (isInteractive) {
+        event.dataTransfer.dropEffect = 'move';
+      } else {
+        event.dataTransfer.dropEffect = 'none';
+      }
+    },
+    [isInteractive]
+  );
 
   return (
     <div ref={reactFlowWrapper} className="pipeline-canvas">
@@ -116,6 +144,9 @@ export const PipelineUI = ({ snapToGrid = true }) => {
         proOptions={proOptions}
         snapToGrid={snapToGrid}
         snapGrid={[gridSize, gridSize]}
+        nodesDraggable={isInteractive}
+        nodesConnectable={isInteractive}
+        elementsSelectable={isInteractive}
         connectionLineType="smoothstep"
         defaultEdgeOptions={{
           type: 'smoothstep',
@@ -126,9 +157,16 @@ export const PipelineUI = ({ snapToGrid = true }) => {
           color="#334155"
           gap={backgroundGap}
           size={1}
-          style={{ opacity: 0.35 }}
+          style={{ opacity: 0.32 }}
         />
-        <Controls />
+        <PipelineControls
+          snapToGrid={snapToGrid}
+          onSnapToggle={onSnapToggle}
+          collapsed={controlsCollapsed}
+          onToggleCollapse={onToggleControlsCollapse}
+          lockWiggle={lockWiggle}
+          onInteractiveChange={onInteractiveChange}
+        />
         <MiniMap
           className="pipeline-minimap"
           style={{ width: 128, height: 96 }}
