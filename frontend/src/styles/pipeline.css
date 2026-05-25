@@ -261,11 +261,11 @@
   display: none;
 }
 
-/* Contextual delete dock — bottom-right, visible while dragging nodes */
+/* Contextual delete dock — top-right, visible while dragging nodes */
 .pipeline-delete-dock {
   position: absolute;
+  top: 14px;
   right: 14px;
-  bottom: 124px;
   z-index: 6;
   display: flex;
   flex-direction: column;
@@ -281,7 +281,7 @@
   color: #64748b;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transform: scale(0.88);
-  transform-origin: bottom right;
+  transform-origin: top right;
   opacity: 0;
   pointer-events: none;
   transition:
