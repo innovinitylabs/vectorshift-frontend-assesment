@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef, useLayoutEffect, useCallback } from 'react';
-import { Position } from 'reactflow';
+import { useState, useMemo, useRef, useLayoutEffect, useCallback, useEffect } from 'react';
+import { Position, useUpdateNodeInternals } from 'reactflow';
 import { BaseNode } from './BaseNode';
 import { contentRegionTop } from './handleLayout';
 
@@ -43,8 +43,10 @@ const buildVariableHandles = (variables) => {
 export const TextNode = ({ id, data }) => {
   const [currText, setCurrText] = useState(data?.text || '{{input}}');
   const textareaRef = useRef(null);
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const variables = useMemo(() => parseVariables(currText), [currText]);
+  const variableKey = variables.join('\0');
 
   const handles = useMemo(
     () => [...buildVariableHandles(variables), OUTPUT_HANDLE],
@@ -69,6 +71,13 @@ export const TextNode = ({ id, data }) => {
   useLayoutEffect(() => {
     syncTextareaSize();
   }, [currText, syncTextareaSize]);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      updateNodeInternals(id);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [id, variableKey, currText, updateNodeInternals]);
 
   return (
     <BaseNode id={id} title="Text" handles={handles} className="node--text">
