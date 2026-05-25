@@ -18,6 +18,7 @@ import { MergeNode } from './nodes/mergeNode';
 import { PipelineControls } from './PipelineControls';
 import {
   buildSplitEdges,
+  canNodeTypeAutoInsert,
   findNearestEdge,
   resolveHandlesForInsert,
 } from './edgeInsert';
@@ -59,6 +60,36 @@ const selector = (state) => ({
   onEdgesChange: state.onEdgesChange,
   onConnect: state.onConnect,
 });
+
+const DRAG_NODE_TYPE_PREFIX = 'application/reactflow-node:';
+const NODE_TYPE_BY_DRAG_TOKEN = {
+  custominput: 'customInput',
+  customoutput: 'customOutput',
+  llm: 'llm',
+  text: 'text',
+  api: 'api',
+  condition: 'condition',
+  delay: 'delay',
+  math: 'math',
+  merge: 'merge',
+};
+
+const getDraggedNodeType = (event) => {
+  const raw = event?.dataTransfer?.getData('application/reactflow');
+  if (raw) {
+    try {
+      return JSON.parse(raw)?.nodeType ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  const nodeTypeToken = Array.from(event?.dataTransfer?.types ?? [])
+    .find((type) => type.startsWith(DRAG_NODE_TYPE_PREFIX))
+    ?.slice(DRAG_NODE_TYPE_PREFIX.length);
+
+  return NODE_TYPE_BY_DRAG_TOKEN[nodeTypeToken] ?? null;
+};
 
 export const PipelineUI = ({
   snapToGrid = true,
@@ -155,11 +186,7 @@ export const PipelineUI = ({
       }
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const raw = event?.dataTransfer?.getData('application/reactflow');
-      if (!raw) return;
-
-      const appData = JSON.parse(raw);
-      const type = appData?.nodeType;
+      const type = getDraggedNodeType(event);
       if (typeof type === 'undefined' || !type) return;
 
       const position = reactFlowInstance.project({
@@ -177,17 +204,23 @@ export const PipelineUI = ({
 
       const modifierHeld = modifierPressedRef.current;
       if (modifierHeld) {
-        const nearestEdge = findNearestEdge(position, nodes, edges);
-        const handles = resolveHandlesForInsert(type, nodeID);
+        if (!canNodeTypeAutoInsert(type)) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('Node type does not support edge insertion:', type);
+          }
+        } else {
+          const nearestEdge = findNearestEdge(position, nodes, edges);
+          const handles = resolveHandlesForInsert(type, nodeID);
 
-        if (nearestEdge && handles) {
-          const splitEdges = buildSplitEdges(nearestEdge, nodeID, handles);
-          const inserted = insertNodeOnEdge({
-            node: newNode,
-            edge: nearestEdge,
-            splitEdges,
-          });
-          if (inserted) return;
+          if (nearestEdge && handles) {
+            const splitEdges = buildSplitEdges(nearestEdge, nodeID, handles);
+            const inserted = insertNodeOnEdge({
+              node: newNode,
+              edge: nearestEdge,
+              splitEdges,
+            });
+            if (inserted) return;
+          }
         }
       }
 
@@ -229,6 +262,12 @@ export const PipelineUI = ({
       event.dataTransfer.dropEffect = 'move';
 
       if (!modifierPressedRef.current || !reactFlowInstance) {
+        clearInsertHighlight();
+        return;
+      }
+
+      const type = getDraggedNodeType(event);
+      if (!canNodeTypeAutoInsert(type)) {
         clearInsertHighlight();
         return;
       }

@@ -9,31 +9,16 @@ const defaultMarkerEnd = {
 /** Approximate node center for midpoint geometry (flow coordinates). */
 const NODE_CENTER_OFFSET = { x: 100, y: 44 };
 
-const TARGET_HANDLE_SUFFIX = {
-  customInput: null,
-  llm: 'prompt',
-  customOutput: 'value',
-  text: null,
-  api: 'input',
-  condition: 'input',
-  delay: 'in',
-  math: 'a',
-  merge: 'in1',
+const INSERTABLE_NODE_HANDLES = {
+  llm: { target: 'prompt', source: 'response' },
+  api: { target: 'input', source: 'output' },
+  condition: { target: 'input', source: 'true' },
+  delay: { target: 'in', source: 'out' },
+  math: { target: 'a', source: 'result' },
+  merge: { target: 'in1', source: 'out' },
 };
 
-const SOURCE_HANDLE_SUFFIX = {
-  customInput: 'value',
-  llm: 'response',
-  customOutput: null,
-  text: 'output',
-  api: 'output',
-  condition: 'true',
-  delay: 'out',
-  math: 'result',
-  merge: 'out',
-};
-
-export const EDGE_INSERT_THRESHOLD = 118;
+export const EDGE_INSERT_THRESHOLD = 124;
 
 const nodeCenter = (node) => ({
   x: node.position.x + NODE_CENTER_OFFSET.x,
@@ -71,17 +56,19 @@ export const findNearestEdge = (flowPoint, nodes, edges, threshold = EDGE_INSERT
   return nearest;
 };
 
-export const resolveHandlesForInsert = (nodeType, nodeId) => {
-  const targetSuffix = TARGET_HANDLE_SUFFIX[nodeType];
-  const sourceSuffix = SOURCE_HANDLE_SUFFIX[nodeType];
+export const canNodeTypeAutoInsert = (nodeType) =>
+  Object.prototype.hasOwnProperty.call(INSERTABLE_NODE_HANDLES, nodeType);
 
-  if (targetSuffix == null || sourceSuffix == null) {
+export const resolveHandlesForInsert = (nodeType, nodeId) => {
+  const handles = INSERTABLE_NODE_HANDLES[nodeType];
+
+  if (!handles) {
     return null;
   }
 
   return {
-    targetHandle: `${nodeId}-${targetSuffix}`,
-    sourceHandle: `${nodeId}-${sourceSuffix}`,
+    targetHandle: `${nodeId}-${handles.target}`,
+    sourceHandle: `${nodeId}-${handles.source}`,
   };
 };
 

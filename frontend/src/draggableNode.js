@@ -42,6 +42,8 @@ const createDragPreviewElement = ({ label, description, ports }) => {
   return card;
 };
 
+const DRAG_NODE_TYPE_PREFIX = 'application/reactflow-node:';
+
 const PortDots = ({ left = 0, right = 0 }) => (
   <div className="draggable-node__ports" aria-hidden="true">
     <div className="draggable-node__port-side draggable-node__port-side--left">
@@ -79,6 +81,7 @@ export const DraggableNode = ({
       'application/reactflow',
       JSON.stringify(appData)
     );
+    event.dataTransfer.setData(`${DRAG_NODE_TYPE_PREFIX}${type}`, type);
     event.dataTransfer.effectAllowed = 'move';
 
     const preview = createDragPreviewElement({ label, description, ports });
