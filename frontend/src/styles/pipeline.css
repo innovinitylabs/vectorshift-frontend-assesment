@@ -33,6 +33,20 @@
   filter: drop-shadow(0 0 5px rgba(147, 197, 253, 0.42));
 }
 
+.pipeline-canvas .react-flow__edge.edge-connection--disabled .react-flow__edge-path {
+  stroke: #64748b;
+  stroke-width: 1.5;
+  opacity: 0.55;
+  filter: none;
+}
+
+.pipeline-canvas .react-flow__edge.edge-connection--disabled.selected .react-flow__edge-path {
+  stroke: #94a3b8;
+  stroke-width: 1.75;
+  opacity: 0.65;
+  filter: none;
+}
+
 .pipeline-canvas .react-flow__connection-path {
   stroke: var(--flow-edge);
   stroke-width: 2;
@@ -371,4 +385,35 @@
 
 .pipeline-delete-dock.is-drop-target {
   transform: scale(1.12);
+}
+
+.pipeline-edge-menu {
+  position: fixed;
+  z-index: 30;
+  min-width: 168px;
+  padding: 4px;
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.pipeline-edge-menu__item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: #e2e8f0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pipeline-edge-menu__item:hover {
+  background: #1e293b;
+  color: #f8fafc;
 }

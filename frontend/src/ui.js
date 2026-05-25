@@ -2,7 +2,8 @@
 // Displays the drag-and-drop UI
 // --------------------------------------------------
 
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { isEdgeDisabled } from './store';
 import ReactFlow, { Background, MiniMap } from 'reactflow';
 import { useStore } from './store';
 import { shallow } from 'zustand/shallow';
@@ -63,6 +64,7 @@ export const PipelineUI = ({
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [draggingNodeId, setDraggingNodeId] = useState(null);
   const [deleteZoneHover, setDeleteZoneHover] = useState(false);
+  const [edgeContextMenu, setEdgeContextMenu] = useState(null);
   const {
     nodes,
     edges,
@@ -89,15 +91,42 @@ export const PipelineUI = ({
 
   const edgesForCanvas = useMemo(
     () =>
-      edges.map((edge) => ({
-        ...edge,
-        selectable: edge.selectable ?? true,
-        deletable: edge.deletable ?? true,
-        focusable: edge.focusable ?? true,
-        updatable: edge.updatable ?? true,
-      })),
+      edges.map((edge) => {
+        const disabled = isEdgeDisabled(edge);
+        return {
+          ...edge,
+          animated: disabled ? false : edge.animated ?? true,
+          className: [edge.className, disabled ? 'edge-connection--disabled' : '']
+            .filter(Boolean)
+            .join(' '),
+          selectable: edge.selectable ?? true,
+          deletable: edge.deletable ?? true,
+          focusable: edge.focusable ?? true,
+          updatable: edge.updatable ?? true,
+        };
+      }),
     [edges]
   );
+
+  useEffect(() => {
+    if (!edgeContextMenu) return undefined;
+
+    const closeMenu = () => setEdgeContextMenu(null);
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') closeMenu();
+    };
+
+    const timer = window.setTimeout(() => {
+      document.addEventListener('click', closeMenu);
+      document.addEventListener('keydown', onKeyDown);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('click', closeMenu);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [edgeContextMenu]);
 
   const isPointInDeleteDock = useCallback((clientX, clientY) => {
     const dock = deleteDockRef.current;
@@ -214,6 +243,22 @@ export const PipelineUI = ({
     }
   }, []);
 
+  const onEdgeContextMenu = useCallback((event, edge) => {
+    event.preventDefault();
+    setEdgeContextMenu({
+      edgeId: edge.id,
+      x: event.clientX,
+      y: event.clientY,
+      disabled: isEdgeDisabled(edge),
+    });
+  }, []);
+
+  const handleEdgeMenuToggle = useCallback(() => {
+    if (!edgeContextMenu?.edgeId) return;
+    useStore.getState().toggleEdgeDisabled(edgeContextMenu.edgeId);
+    setEdgeContextMenu(null);
+  }, [edgeContextMenu]);
+
   const onEdgeUpdateEnd = useCallback((_event, edge) => {
     if (!edgeReconnectSucceededRef.current) {
       useStore.getState().removeEdge(edge.id);
@@ -247,6 +292,7 @@ export const PipelineUI = ({
         onEdgeUpdate={onEdgeUpdate}
         onEdgeUpdateStart={onEdgeUpdateStart}
         onEdgeUpdateEnd={onEdgeUpdateEnd}
+        onEdgeContextMenu={onEdgeContextMenu}
         onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
         proOptions={proOptions}
@@ -312,6 +358,23 @@ export const PipelineUI = ({
         </svg>
         <span className="pipeline-delete-dock__label">Delete</span>
       </div>
+      {edgeContextMenu && (
+        <div
+          className="pipeline-edge-menu"
+          style={{ top: edgeContextMenu.y, left: edgeContextMenu.x }}
+          role="menu"
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="pipeline-edge-menu__item"
+            role="menuitem"
+            onClick={handleEdgeMenuToggle}
+          >
+            {edgeContextMenu.disabled ? 'Enable connection' : 'Disable connection'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

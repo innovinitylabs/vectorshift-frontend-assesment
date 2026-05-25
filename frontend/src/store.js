@@ -12,8 +12,11 @@ import {
 const edgeStyle = {
   type: 'smoothstep',
   animated: true,
+  data: { disabled: false },
   markerEnd: { type: MarkerType.Arrow, height: '20px', width: '20px' },
 };
+
+export const isEdgeDisabled = (edge) => edge?.data?.disabled === true;
 
 const connectionIsValid = (connection, edges, nodes, excludeEdgeId = null) => {
   if (!connection?.source || !connection?.target) {
@@ -68,6 +71,22 @@ export const useStore = create((set, get) => ({
         if (!edgeId) return;
         set({
             edges: get().edges.filter((edge) => edge.id !== edgeId),
+        });
+    },
+    toggleEdgeDisabled: (edgeId) => {
+        if (!edgeId) return;
+        set({
+            edges: get().edges.map((edge) =>
+                edge.id === edgeId
+                    ? {
+                        ...edge,
+                        data: {
+                            ...edge.data,
+                            disabled: !isEdgeDisabled(edge),
+                        },
+                    }
+                    : edge
+            ),
         });
     },
     setReconnectingEdgeId: (edgeId) => {
