@@ -24,6 +24,21 @@ import 'reactflow/dist/style.css';
 const gridSize = 20;
 const backgroundGap = 32;
 const proOptions = { hideAttribution: true };
+const viewportTransition = { duration: 220 };
+const fitViewOptions = { padding: 0.18, duration: 320 };
+
+const isEditableTarget = (target) => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  const tag = target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    return true;
+  }
+
+  return target.isContentEditable;
+};
 const nodeTypes = {
   customInput: InputNode,
   llm: LLMNode,
@@ -145,6 +160,64 @@ export const PipelineUI = ({
       }),
     [edges]
   );
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      if (event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
+
+      const key = event.key;
+
+      if (key === 'f' || key === 'F') {
+        event.preventDefault();
+        reactFlowInstance?.fitView(fitViewOptions);
+        return;
+      }
+
+      if (key === '=' || key === '+') {
+        event.preventDefault();
+        reactFlowInstance?.zoomIn(viewportTransition);
+        return;
+      }
+
+      if (key === '-' || key === '_') {
+        event.preventDefault();
+        reactFlowInstance?.zoomOut(viewportTransition);
+        return;
+      }
+
+      if (key === 'g' || key === 'G') {
+        event.preventDefault();
+        onSnapToggle?.();
+        return;
+      }
+
+      if (key === 'l' || key === 'L') {
+        event.preventDefault();
+        onInteractiveChange?.(!isInteractive);
+        return;
+      }
+
+      if (key === 'Tab') {
+        event.preventDefault();
+        onToggleControlsCollapse?.();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [
+    reactFlowInstance,
+    onSnapToggle,
+    onInteractiveChange,
+    isInteractive,
+    onToggleControlsCollapse,
+  ]);
 
   useEffect(() => {
     if (!edgeContextMenu) return undefined;
@@ -374,6 +447,7 @@ export const PipelineUI = ({
           onToggleCollapse={onToggleControlsCollapse}
           lockWiggle={lockWiggle}
           onInteractiveChange={onInteractiveChange}
+          isInteractive={isInteractive}
         />
         <MiniMap
           className="pipeline-minimap"
