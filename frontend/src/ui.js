@@ -3,7 +3,7 @@
 // --------------------------------------------------
 
 import { useState, useRef, useCallback } from 'react';
-import ReactFlow, { Controls, Background, MiniMap } from 'reactflow';
+import ReactFlow, { Controls, Background } from 'reactflow';
 import { useStore } from './store';
 import { shallow } from 'zustand/shallow';
 import { InputNode } from './nodes/inputNode';
@@ -16,9 +16,11 @@ import { DelayNode } from './nodes/delayNode';
 import { MathNode } from './nodes/mathNode';
 import { MergeNode } from './nodes/mergeNode';
 import './styles/toolbar.css';
+import './styles/pipeline.css';
 import 'reactflow/dist/style.css';
 
 const gridSize = 20;
+const backgroundGap = 32;
 const proOptions = { hideAttribution: true };
 const nodeTypes = {
   customInput: InputNode,
@@ -114,10 +116,18 @@ export const PipelineUI = () => {
                 proOptions={proOptions}
                 snapGrid={[gridSize, gridSize]}
                 connectionLineType='smoothstep'
+                defaultEdgeOptions={{
+                  type: 'smoothstep',
+                  animated: true,
+                }}
             >
-                <Background color="#2a3548" gap={gridSize} />
+                <Background
+                  color="#334155"
+                  gap={backgroundGap}
+                  size={1}
+                  style={{ opacity: 0.35 }}
+                />
                 <Controls />
-                <MiniMap />
             </ReactFlow>
         </div>
         </>
