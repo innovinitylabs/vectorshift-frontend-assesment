@@ -1,23 +1,26 @@
 import { useState } from 'react';
 import { Position } from 'reactflow';
 import { BaseNode } from './BaseNode';
-import { distributedContentTops } from './handleLayout';
-
-const [trueTop, falseTop] = distributedContentTops(2);
+import { contentRegionTop, centeredContentHandleStyle } from './handleLayout';
 
 const CONDITION_HANDLES = [
-  { type: 'target', position: Position.Left, idSuffix: 'input' },
+  {
+    type: 'target',
+    position: Position.Left,
+    idSuffix: 'input',
+    style: centeredContentHandleStyle(),
+  },
   {
     type: 'source',
     position: Position.Right,
     idSuffix: 'true',
-    style: { top: trueTop },
+    style: { top: contentRegionTop(0.18) },
   },
   {
     type: 'source',
     position: Position.Right,
     idSuffix: 'false',
-    style: { top: falseTop },
+    style: { top: contentRegionTop(0.82) },
   },
 ];
 
@@ -29,7 +32,7 @@ export const ConditionNode = ({ id }) => {
       id={id}
       title="Condition"
       handles={CONDITION_HANDLES}
-      className="node--compact"
+      className="node--condition"
     >
       <div className="node-field">
         <label className="node-label">Operator</label>

@@ -37,6 +37,24 @@
   min-height: 110px;
 }
 
+.node--condition {
+  min-height: 104px;
+}
+
+.node--condition .node__body {
+  padding-top: 11px;
+  padding-bottom: 13px;
+}
+
+.node--math {
+  min-height: 128px;
+}
+
+.node--math .node__body {
+  padding-top: 12px;
+  padding-bottom: 14px;
+}
+
 .node--text {
   min-height: auto;
   height: auto;
