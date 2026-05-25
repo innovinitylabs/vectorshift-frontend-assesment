@@ -11,19 +11,13 @@ const SnapGridIcon = () => (
 
 const CollapseIcon = () => (
   <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
-    <path
-      fill="currentColor"
-      d="M3 5l5 5 5-5H3z"
-    />
+    <path fill="currentColor" d="M3 5l5 5 5-5H3z" />
   </svg>
 );
 
 const ExpandIcon = () => (
   <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
-    <path
-      fill="currentColor"
-      d="M3 11l5-5 5 5H3z"
-    />
+    <path fill="currentColor" d="M3 11l5-5 5 5H3z" />
   </svg>
 );
 
@@ -35,51 +29,40 @@ export const PipelineControls = ({
   lockWiggle,
   onInteractiveChange,
 }) => {
-  if (collapsed) {
-    return (
-      <div className="pipeline-controls pipeline-controls--collapsed">
-        <button
-          type="button"
-          className="pipeline-control-btn"
-          onClick={onToggleCollapse}
-          data-tooltip="Expand controls"
-          aria-label="Expand controls"
-        >
-          <ExpandIcon />
-        </button>
-      </div>
-    );
-  }
+  const dockClass = [
+    'pipeline-control-dock',
+    collapsed ? 'is-collapsed' : '',
+    lockWiggle ? 'is-wiggle' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div
-      className={`pipeline-controls${lockWiggle ? ' pipeline-controls--wiggle' : ''}`}
+    <Controls
+      className={dockClass}
+      showInteractive
+      showZoom
+      showFitView
+      position="bottom-left"
+      onInteractiveChange={onInteractiveChange}
     >
-      <Controls
-        showInteractive
-        showZoom
-        showFitView
-        position="bottom-left"
-        onInteractiveChange={onInteractiveChange}
+      <ControlButton
+        onClick={onSnapToggle}
+        className={`pipeline-control-snap${snapToGrid ? ' is-active' : ''}`}
+        data-tooltip="Snap to grid"
+        aria-label="Snap to grid"
+        aria-pressed={snapToGrid}
       >
-        <ControlButton
-          onClick={onSnapToggle}
-          className={`pipeline-control-snap${snapToGrid ? ' is-active' : ''}`}
-          data-tooltip="Snap to grid"
-          aria-label="Snap to grid"
-          aria-pressed={snapToGrid}
-        >
-          <SnapGridIcon />
-        </ControlButton>
-        <ControlButton
-          onClick={onToggleCollapse}
-          className="pipeline-control-collapse"
-          data-tooltip="Collapse controls"
-          aria-label="Collapse controls"
-        >
-          <CollapseIcon />
-        </ControlButton>
-      </Controls>
-    </div>
+        <SnapGridIcon />
+      </ControlButton>
+      <ControlButton
+        onClick={onToggleCollapse}
+        className="pipeline-control-toggle"
+        data-tooltip={collapsed ? 'Expand controls' : 'Collapse controls'}
+        aria-label={collapsed ? 'Expand controls' : 'Collapse controls'}
+      >
+        {collapsed ? <ExpandIcon /> : <CollapseIcon />}
+      </ControlButton>
+    </Controls>
   );
 };

@@ -54,74 +54,105 @@
   }
 }
 
-.pipeline-controls--wiggle .react-flow__controls-interactive {
-  animation: lock-wiggle 0.2s ease;
-}
+/* Control dock */
 
-.pipeline-controls--collapsed {
-  position: absolute;
-  left: 12px;
-  bottom: 12px;
-  z-index: 6;
-}
-
-.pipeline-control-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  color: #94a3b8;
-  background: #1e293b;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition:
-    background 0.18s ease,
-    color 0.18s ease,
-    border-color 0.18s ease;
-}
-
-.pipeline-control-btn:hover {
-  color: #e2e8f0;
-  background: #243044;
-  border-color: rgba(56, 189, 248, 0.28);
-}
-
-.pipeline-controls .react-flow__controls {
-  margin: 0;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 8px;
+.pipeline-canvas .react-flow__panel {
   overflow: visible;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.18s ease;
 }
 
-.pipeline-controls .react-flow__controls-button {
+.pipeline-control-dock.react-flow__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 14px 14px;
+  padding: 4px;
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  overflow: visible;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  transition: box-shadow 0.2s ease;
+}
+
+.pipeline-control-dock .react-flow__controls-button {
   position: relative;
-  background: #1e293b;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-  fill: #94a3b8;
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
+  margin: 0;
+  padding: 0;
+  background: #1e293b;
+  border: none;
+  border-radius: 6px;
+  fill: #94a3b8;
+  overflow: visible;
   transition:
     background 0.18s ease,
-    fill 0.18s ease;
+    fill 0.18s ease,
+    max-height 0.2s ease,
+    opacity 0.18s ease,
+    margin 0.2s ease,
+    padding 0.2s ease;
 }
 
-.pipeline-controls .react-flow__controls-button:hover {
+.pipeline-control-dock .react-flow__controls-button:hover {
   background: #243044;
   fill: #e2e8f0;
 }
 
-.pipeline-controls .react-flow__controls-button:hover::after {
+.pipeline-control-dock .react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.pipeline-control-dock .pipeline-control-snap {
+  margin-top: 2px;
+  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.1);
+}
+
+.pipeline-control-dock .pipeline-control-snap.is-active {
+  background: rgba(56, 189, 248, 0.18);
+  fill: #38bdf8;
+}
+
+.pipeline-control-dock .pipeline-control-toggle {
+  opacity: 0.88;
+}
+
+.pipeline-control-dock .pipeline-control-toggle:hover {
+  opacity: 1;
+}
+
+.pipeline-control-dock.is-collapsed
+  .react-flow__controls-button:not(.pipeline-control-toggle) {
+  max-height: 0;
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pipeline-control-dock.is-collapsed .pipeline-control-snap {
+  box-shadow: none;
+}
+
+.pipeline-control-dock.is-wiggle .react-flow__controls-interactive {
+  animation: lock-wiggle 0.2s ease;
+}
+
+/* Right-side dock tooltips */
+
+.pipeline-control-dock .react-flow__controls-button::after,
+.pipeline-control-dock [data-tooltip]::after {
   position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  transform: translateX(-50%);
-  padding: 5px 8px;
+  top: 50%;
+  left: calc(100% + 10px);
+  right: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+  padding: 5px 9px;
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 11px;
   font-weight: 500;
@@ -129,60 +160,40 @@
   white-space: nowrap;
   color: #e2e8f0;
   background: #0f172a;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 6px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.32);
   pointer-events: none;
-  z-index: 30;
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  transition-delay: 0s;
 }
 
-.pipeline-controls .react-flow__controls-zoomin:hover::after {
+.pipeline-control-dock .react-flow__controls-button:hover::after,
+.pipeline-control-dock [data-tooltip]:hover::after {
+  opacity: 1;
+  transition-delay: 0.4s;
+}
+
+.pipeline-control-dock .react-flow__controls-zoomin:hover::after {
   content: 'Zoom in';
 }
 
-.pipeline-controls .react-flow__controls-zoomout:hover::after {
+.pipeline-control-dock .react-flow__controls-zoomout:hover::after {
   content: 'Zoom out';
 }
 
-.pipeline-controls .react-flow__controls-fitview:hover::after {
+.pipeline-control-dock .react-flow__controls-fitview:hover::after {
   content: 'Fit view';
 }
 
-.pipeline-controls .react-flow__controls-interactive:hover::after {
+.pipeline-control-dock .react-flow__controls-interactive:hover::after {
   content: 'Lock or unlock canvas';
 }
 
-.pipeline-control-snap.is-active {
-  background: rgba(56, 189, 248, 0.18);
-  fill: #38bdf8;
-}
-
-.pipeline-control-snap:hover::after,
-.pipeline-control-collapse:hover::after {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  transform: translateX(-50%);
-  padding: 5px 8px;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-  color: #e2e8f0;
-  background: #0f172a;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 6px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  pointer-events: none;
-  z-index: 30;
-}
-
-.pipeline-control-snap:hover::after {
-  content: 'Snap to grid';
-}
-
-.pipeline-control-collapse:hover::after {
-  content: 'Collapse controls';
+.pipeline-control-dock [data-tooltip]:hover::after {
+  content: attr(data-tooltip);
 }
 
 .pipeline-canvas .react-flow__minimap.pipeline-minimap {
