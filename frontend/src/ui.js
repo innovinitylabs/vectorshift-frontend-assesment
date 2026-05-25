@@ -209,7 +209,13 @@ export const PipelineUI = ({
             console.log('Node type does not support edge insertion:', type);
           }
         } else {
-          const nearestEdge = findNearestEdge(position, nodes, edges);
+          const nearestEdge = findNearestEdge(
+            position,
+            nodes,
+            edges,
+            undefined,
+            (id) => reactFlowInstance?.getNode(id)
+          );
           const handles = resolveHandlesForInsert(type, nodeID);
 
           if (nearestEdge && handles) {
@@ -278,7 +284,13 @@ export const PipelineUI = ({
         y: event.clientY - reactFlowBounds.top,
       });
 
-      const nearest = findNearestEdge(flowPoint, nodes, edges);
+      const nearest = findNearestEdge(
+        flowPoint,
+        nodes,
+        edges,
+        undefined,
+        (id) => reactFlowInstance?.getNode(id)
+      );
       setInsertCandidateEdgeId(nearest?.id ?? null);
     },
     [isInteractive, reactFlowInstance, nodes, edges, clearInsertHighlight]

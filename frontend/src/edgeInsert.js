@@ -9,6 +9,8 @@ const defaultMarkerEnd = {
 const DEFAULT_NODE_WIDTH = 200;
 const DEFAULT_NODE_HEIGHT = 80;
 
+const EDGE_SAMPLE_FRACTIONS = [0.25, 0.5, 0.75];
+
 const INSERTABLE_NODE_HANDLES = {
   llm: { target: 'prompt', source: 'response' },
   api: { target: 'input', source: 'output' },
@@ -18,43 +20,66 @@ const INSERTABLE_NODE_HANDLES = {
   merge: { target: 'in1', source: 'out' },
 };
 
-export const EDGE_INSERT_THRESHOLD = 98;
+export const EDGE_INSERT_THRESHOLD = 112;
 
-const getNodeDimensions = (node) => ({
-  width: node.measured?.width ?? node.width ?? DEFAULT_NODE_WIDTH,
-  height: node.measured?.height ?? node.height ?? DEFAULT_NODE_HEIGHT,
+export const getNodeDimensions = (node) => ({
+  width: node?.width ?? DEFAULT_NODE_WIDTH,
+  height: node?.height ?? DEFAULT_NODE_HEIGHT,
 });
 
-const nodeCenter = (node) => {
-  const { width, height } = getNodeDimensions(node);
+/** Right-center (source) and left-center (target) handle anchors in flow space. */
+export const getHandleAnchors = (sourceNode, targetNode) => {
+  const source = getNodeDimensions(sourceNode);
+  const target = getNodeDimensions(targetNode);
+
   return {
-    x: node.position.x + width / 2,
-    y: node.position.y + height / 2,
+    sourcePoint: {
+      x: sourceNode.position.x + source.width,
+      y: sourceNode.position.y + source.height / 2,
+    },
+    targetPoint: {
+      x: targetNode.position.x,
+      y: targetNode.position.y + target.height / 2,
+    },
   };
 };
 
+export const samplePointsAlongEdge = (sourcePoint, targetPoint) =>
+  EDGE_SAMPLE_FRACTIONS.map((fraction) => ({
+    x: sourcePoint.x + (targetPoint.x - sourcePoint.x) * fraction,
+    y: sourcePoint.y + (targetPoint.y - sourcePoint.y) * fraction,
+  }));
+
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
-export const findNearestEdge = (flowPoint, nodes, edges, threshold = EDGE_INSERT_THRESHOLD) => {
+const minDistanceToEdgeSamples = (flowPoint, sourcePoint, targetPoint) => {
+  const samples = samplePointsAlongEdge(sourcePoint, targetPoint);
+  return Math.min(...samples.map((point) => distance(flowPoint, point)));
+};
+
+export const findNearestEdge = (
+  flowPoint,
+  nodes,
+  edges,
+  threshold = EDGE_INSERT_THRESHOLD,
+  getNodeById
+) => {
   if (!flowPoint || !edges.length) return null;
 
   const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const resolveNode = (id) => getNodeById?.(id) ?? nodeById.get(id);
+
   let nearest = null;
   let nearestDistance = threshold;
 
   edges.forEach((edge) => {
-    const sourceNode = nodeById.get(edge.source);
-    const targetNode = nodeById.get(edge.target);
+    const sourceNode = resolveNode(edge.source);
+    const targetNode = resolveNode(edge.target);
     if (!sourceNode || !targetNode) return;
 
-    const sourceCenter = nodeCenter(sourceNode);
-    const targetCenter = nodeCenter(targetNode);
-    const midpoint = {
-      x: (sourceCenter.x + targetCenter.x) / 2,
-      y: (sourceCenter.y + targetCenter.y) / 2,
-    };
+    const { sourcePoint, targetPoint } = getHandleAnchors(sourceNode, targetNode);
+    const dist = minDistanceToEdgeSamples(flowPoint, sourcePoint, targetPoint);
 
-    const dist = distance(flowPoint, midpoint);
     if (dist < nearestDistance) {
       nearestDistance = dist;
       nearest = edge;
