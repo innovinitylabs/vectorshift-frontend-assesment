@@ -259,6 +259,12 @@ export const PipelineUI = ({
     setEdgeContextMenu(null);
   }, [edgeContextMenu]);
 
+  const handleEdgeMenuDelete = useCallback(() => {
+    if (!edgeContextMenu?.edgeId) return;
+    useStore.getState().removeEdge(edgeContextMenu.edgeId);
+    setEdgeContextMenu(null);
+  }, [edgeContextMenu]);
+
   const onEdgeUpdateEnd = useCallback((_event, edge) => {
     if (!edgeReconnectSucceededRef.current) {
       useStore.getState().removeEdge(edge.id);
@@ -372,6 +378,15 @@ export const PipelineUI = ({
             onClick={handleEdgeMenuToggle}
           >
             {edgeContextMenu.disabled ? 'Enable connection' : 'Disable connection'}
+          </button>
+          <div className="pipeline-edge-menu__separator" role="separator" />
+          <button
+            type="button"
+            className="pipeline-edge-menu__item pipeline-edge-menu__item--danger"
+            role="menuitem"
+            onClick={handleEdgeMenuDelete}
+          >
+            Delete connection
           </button>
         </div>
       )}

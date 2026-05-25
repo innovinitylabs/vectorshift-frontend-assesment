@@ -390,8 +390,8 @@
 .pipeline-edge-menu {
   position: fixed;
   z-index: 30;
-  min-width: 168px;
-  padding: 4px;
+  min-width: 176px;
+  padding: 5px;
   background: #111827;
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 8px;
@@ -401,13 +401,14 @@
 .pipeline-edge-menu__item {
   display: block;
   width: 100%;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: none;
   border-radius: 5px;
   background: transparent;
   color: #e2e8f0;
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 12px;
+  line-height: 1.35;
   text-align: left;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -416,4 +417,19 @@
 .pipeline-edge-menu__item:hover {
   background: #1e293b;
   color: #f8fafc;
+}
+
+.pipeline-edge-menu__separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: rgba(100, 116, 139, 0.35);
+}
+
+.pipeline-edge-menu__item--danger {
+  color: #f87171;
+}
+
+.pipeline-edge-menu__item--danger:hover {
+  background: rgba(127, 29, 29, 0.35);
+  color: #fca5a5;
 }
