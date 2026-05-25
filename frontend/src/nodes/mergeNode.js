@@ -1,25 +1,28 @@
 import { useState } from 'react';
 import { Position } from 'reactflow';
 import { BaseNode } from './BaseNode';
+import { distributedContentTops } from './handleLayout';
+
+const [in1Top, in2Top, in3Top] = distributedContentTops(3);
 
 const MERGE_HANDLES = [
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'in1',
-    style: { top: '25%' },
+    style: { top: in1Top },
   },
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'in2',
-    style: { top: '50%' },
+    style: { top: in2Top },
   },
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'in3',
-    style: { top: '75%' },
+    style: { top: in3Top },
   },
   { type: 'source', position: Position.Right, idSuffix: 'out' },
 ];

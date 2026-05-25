@@ -1,18 +1,21 @@
 import { Position } from 'reactflow';
 import { BaseNode } from './BaseNode';
+import { distributedContentTops } from './handleLayout';
+
+const [systemTop, promptTop] = distributedContentTops(2);
 
 const LLM_HANDLES = [
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'system',
-    style: { top: `${100 / 3}%` },
+    style: { top: systemTop },
   },
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'prompt',
-    style: { top: `${200 / 3}%` },
+    style: { top: promptTop },
   },
   { type: 'source', position: Position.Right, idSuffix: 'response' },
 ];

@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useLayoutEffect, useCallback } from 'react';
 import { Position } from 'reactflow';
 import { BaseNode } from './BaseNode';
+import { contentRegionTop } from './handleLayout';
 
 const VARIABLE_REGEX = /{{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*}}/g;
 
@@ -34,7 +35,7 @@ const buildVariableHandles = (variables) => {
     position: Position.Left,
     idSuffix: name,
     style: {
-      top: `${((index + 1) / (count + 1)) * 100}%`,
+      top: contentRegionTop((index + 1) / (count + 1)),
     },
   }));
 };

@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { Position } from 'reactflow';
 import { BaseNode } from './BaseNode';
+import { distributedContentTops } from './handleLayout';
+
+const [trueTop, falseTop] = distributedContentTops(2);
 
 const CONDITION_HANDLES = [
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'true',
-    style: { top: '30%' },
+    style: { top: trueTop },
   },
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'false',
-    style: { top: '70%' },
+    style: { top: falseTop },
   },
   { type: 'source', position: Position.Right, idSuffix: 'result' },
 ];

@@ -7,6 +7,8 @@
   --node-accent: #38bdf8;
   --node-input-bg: #0f172a;
   --node-input-border: rgba(148, 163, 184, 0.2);
+  --node-content-top: 34%;
+  --node-content-bottom: 90%;
 
   min-width: 200px;
   min-height: 80px;

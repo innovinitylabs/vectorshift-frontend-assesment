@@ -1,4 +1,5 @@
 import { Handle, Position } from 'reactflow';
+import { centeredContentHandleStyle } from './handleLayout';
 import './nodes.css';
 
 const defaultPosition = (type) =>
@@ -6,6 +7,13 @@ const defaultPosition = (type) =>
 
 const resolveHandleId = (id, handle) =>
   handle.id ?? `${id}-${handle.idSuffix}`;
+
+const resolveHandleStyle = (handle) => {
+  if (handle.style?.top != null) {
+    return handle.style;
+  }
+  return centeredContentHandleStyle();
+};
 
 export const BaseNode = ({
   id,
@@ -24,7 +32,7 @@ export const BaseNode = ({
             type={handle.type}
             position={handle.position ?? defaultPosition(handle.type)}
             id={handleId}
-            style={handle.style}
+            style={resolveHandleStyle(handle)}
           />
         );
       })}

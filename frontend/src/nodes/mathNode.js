@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { Position } from 'reactflow';
 import { BaseNode } from './BaseNode';
+import { distributedContentTops } from './handleLayout';
+
+const [aTop, bTop] = distributedContentTops(2);
 
 const MATH_HANDLES = [
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'a',
-    style: { top: '35%' },
+    style: { top: aTop },
   },
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'b',
-    style: { top: '65%' },
+    style: { top: bTop },
   },
   { type: 'source', position: Position.Right, idSuffix: 'result' },
 ];
