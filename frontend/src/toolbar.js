@@ -64,14 +64,16 @@ export const PipelineToolbar = ({ locked, onLockedDragAttempt }) => {
   return (
     <header className="pipeline-toolbar">
       <div className="pipeline-toolbar__brand">
-        <img
-          className="pipeline-toolbar__logo"
-          src={`${process.env.PUBLIC_URL}/vectorshift.avif`}
-          alt="VectorShift"
-          width={28}
-          height={28}
-          draggable={false}
-        />
+        <span className="pipeline-toolbar__logo-wrap">
+          <img
+            className="pipeline-toolbar__logo"
+            src={`${process.env.PUBLIC_URL}/vectorshift.avif`}
+            alt="VectorShift"
+            width={26}
+            height={26}
+            draggable={false}
+          />
+        </span>
         <span className="pipeline-toolbar__title">{APP_NAME}</span>
       </div>
       <div className="pipeline-toolbar__nodes">

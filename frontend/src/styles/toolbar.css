@@ -18,7 +18,7 @@
   flex-shrink: 0;
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px 20px;
   padding: 10px 16px 14px;
   background: #111827;
@@ -30,20 +30,30 @@
 .pipeline-toolbar__brand {
   display: flex;
   align-items: center;
+  align-self: center;
   gap: 10px;
   flex-shrink: 0;
-  padding-right: 4px;
+  padding: 2px 12px 2px 2px;
   border-right: 1px solid rgba(148, 163, 184, 0.14);
   margin-right: 2px;
 }
 
+.pipeline-toolbar__logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
 .pipeline-toolbar__logo {
   display: block;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
   object-fit: contain;
-  flex-shrink: 0;
+  object-position: center center;
 }
 
 .pipeline-toolbar__title {
@@ -52,7 +62,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   color: #e2e8f0;
-  line-height: 1.2;
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -60,7 +70,7 @@
   display: flex;
   flex: 1;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   min-width: 0;
 }
