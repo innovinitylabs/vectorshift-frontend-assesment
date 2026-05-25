@@ -33,7 +33,7 @@ export const centeredContentHandleStyle = () => ({
 /**
  * Space N left-side variable handles with a minimum vertical gap in the content band.
  */
-export const distributedVariableTops = (count, minFractionGap = 0.13) => {
+export const distributedVariableTops = (count, minFractionGap = 0.15) => {
   if (count <= 0) return [];
   if (count === 1) return [contentRegionTop(0.5)];
 

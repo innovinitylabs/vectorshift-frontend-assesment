@@ -90,6 +90,47 @@
   text-align: left;
 }
 
+.node-handle-label--connected {
+  opacity: 0.52;
+  color: rgba(100, 116, 139, 0.62);
+}
+
+.node-handle-label--left.node-handle-label--connected {
+  transform: translate(calc(-100% - 20px), -50%);
+}
+
+.node-handle-label--right.node-handle-label--connected {
+  transform: translate(20px, -50%);
+}
+
+.node-handle-label--left.node-handle-label--connected.node-handle-label--stagger-up {
+  transform: translate(calc(-100% - 22px), calc(-50% - 4px));
+}
+
+.node-handle-label--left.node-handle-label--connected.node-handle-label--stagger-down {
+  transform: translate(calc(-100% - 22px), calc(-50% + 4px));
+}
+
+.node-handle-label--right.node-handle-label--connected.node-handle-label--stagger-up {
+  transform: translate(22px, calc(-50% - 4px));
+}
+
+.node-handle-label--right.node-handle-label--connected.node-handle-label--stagger-down {
+  transform: translate(22px, calc(-50% + 4px));
+}
+
+.node--text .node-handle-label--left.node-handle-label--connected {
+  transform: translate(calc(-100% - 22px), -50%);
+}
+
+.node--text .node-handle-label--left.node-handle-label--connected.node-handle-label--stagger-up {
+  transform: translate(calc(-100% - 24px), calc(-50% - 5px));
+}
+
+.node--text .node-handle-label--left.node-handle-label--connected.node-handle-label--stagger-down {
+  transform: translate(calc(-100% - 24px), calc(-50% + 5px));
+}
+
 .node--condition .node-field--operator {
   margin-top: 2px;
 }
