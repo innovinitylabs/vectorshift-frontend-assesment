@@ -27,6 +27,12 @@
   filter: drop-shadow(0 0 4px rgba(125, 211, 252, 0.45));
 }
 
+.pipeline-canvas .react-flow__edge.updating .react-flow__edge-path {
+  stroke: #93c5fd;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 5px rgba(147, 197, 253, 0.42));
+}
+
 .pipeline-canvas .react-flow__connection-path {
   stroke: var(--flow-edge);
   stroke-width: 2;

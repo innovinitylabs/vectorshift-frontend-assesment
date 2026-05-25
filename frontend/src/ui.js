@@ -59,6 +59,7 @@ export const PipelineUI = ({
 }) => {
   const reactFlowWrapper = useRef(null);
   const deleteDockRef = useRef(null);
+  const edgeReconnectSucceededRef = useRef(false);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [draggingNodeId, setDraggingNodeId] = useState(null);
   const [deleteZoneHover, setDeleteZoneHover] = useState(false);
@@ -81,6 +82,7 @@ export const PipelineUI = ({
       selectable: true,
       deletable: true,
       focusable: true,
+      updatable: true,
     }),
     []
   );
@@ -92,6 +94,7 @@ export const PipelineUI = ({
         selectable: edge.selectable ?? true,
         deletable: edge.deletable ?? true,
         focusable: edge.focusable ?? true,
+        updatable: edge.updatable ?? true,
       })),
     [edges]
   );
@@ -199,6 +202,26 @@ export const PipelineUI = ({
     [isPointInDeleteDock, removeNode]
   );
 
+  const onEdgeUpdateStart = useCallback((_event, edge) => {
+    edgeReconnectSucceededRef.current = false;
+    useStore.getState().setReconnectingEdgeId(edge.id);
+  }, []);
+
+  const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
+    const updated = useStore.getState().updateEdgeConnection(oldEdge, newConnection);
+    if (updated) {
+      edgeReconnectSucceededRef.current = true;
+    }
+  }, []);
+
+  const onEdgeUpdateEnd = useCallback((_event, edge) => {
+    if (!edgeReconnectSucceededRef.current) {
+      useStore.getState().removeEdge(edge.id);
+    }
+    useStore.getState().clearReconnectingEdgeId();
+    edgeReconnectSucceededRef.current = false;
+  }, []);
+
   const deleteDockClassName = [
     'pipeline-delete-dock',
     draggingNodeId ? 'is-active' : '',
@@ -221,6 +244,9 @@ export const PipelineUI = ({
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
+        onEdgeUpdate={onEdgeUpdate}
+        onEdgeUpdateStart={onEdgeUpdateStart}
+        onEdgeUpdateEnd={onEdgeUpdateEnd}
         onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
         proOptions={proOptions}
@@ -230,8 +256,10 @@ export const PipelineUI = ({
         nodesConnectable={isInteractive}
         nodesFocusable={isInteractive}
         edgesFocusable={isInteractive}
+        edgesUpdatable={isInteractive}
         elementsSelectable={isInteractive}
         deleteKeyCode={isInteractive ? ['Backspace', 'Delete'] : null}
+        edgeUpdaterRadius={12}
         connectionLineType="smoothstep"
         defaultEdgeOptions={defaultEdgeOptions}
       >
