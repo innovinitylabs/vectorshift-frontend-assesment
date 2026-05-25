@@ -5,47 +5,56 @@ const NODE_PALETTE = [
   {
     type: 'customInput',
     label: 'Input',
-    tooltip: 'Add an input source to the pipeline',
+    description: 'Pipeline entry point',
+    ports: { left: 0, right: 1 },
   },
   {
     type: 'llm',
     label: 'LLM',
-    tooltip: 'Add a language model processing step',
+    description: 'Prompt in, response out',
+    ports: { left: 1, right: 1 },
   },
   {
     type: 'customOutput',
     label: 'Output',
-    tooltip: 'Add an output destination for results',
+    description: 'Final pipeline result',
+    ports: { left: 1, right: 0 },
   },
   {
     type: 'text',
     label: 'Text',
-    tooltip: 'Add text templating with variable inputs',
+    description: 'Dynamic text + variable inputs',
+    ports: { left: 1, right: 1 },
   },
   {
     type: 'api',
     label: 'API',
-    tooltip: 'Call an external HTTP API endpoint',
+    description: 'HTTP request step',
+    ports: { left: 1, right: 1 },
   },
   {
     type: 'condition',
     label: 'Condition',
-    tooltip: 'Branch the pipeline based on a condition',
+    description: 'Branch execution paths',
+    ports: { left: 1, right: 2 },
   },
   {
     type: 'delay',
     label: 'Delay',
-    tooltip: 'Delay execution in the pipeline',
+    description: 'Pause before next step',
+    ports: { left: 1, right: 1 },
   },
   {
     type: 'math',
     label: 'Math',
-    tooltip: 'Perform numeric operations on inputs',
+    description: 'Numeric operations',
+    ports: { left: 2, right: 1 },
   },
   {
     type: 'merge',
     label: 'Merge',
-    tooltip: 'Merge multiple inputs into one stream',
+    description: 'Combine workflow streams',
+    ports: { left: 2, right: 1 },
   },
 ];
 
@@ -58,7 +67,8 @@ export const PipelineToolbar = ({ locked, onLockedDragAttempt }) => {
             key={node.type}
             type={node.type}
             label={node.label}
-            tooltip={node.tooltip}
+            description={node.description}
+            ports={node.ports}
             locked={locked}
             onLockedDragAttempt={onLockedDragAttempt}
           />
