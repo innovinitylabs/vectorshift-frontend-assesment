@@ -2,7 +2,7 @@
 // Displays the drag-and-drop UI
 // --------------------------------------------------
 
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import ReactFlow, { Background, MiniMap, MarkerType } from 'reactflow';
 import { useStore } from './store';
 import { shallow } from 'zustand/shallow';
@@ -19,7 +19,6 @@ import { PipelineControls } from './PipelineControls';
 import {
   buildSplitEdges,
   findNearestEdge,
-  isInsertModifierHeld,
   resolveHandlesForInsert,
 } from './edgeInsert';
 import './styles/toolbar.css';
@@ -72,8 +71,49 @@ export const PipelineUI = ({
   onLockedDragAttempt,
 }) => {
   const reactFlowWrapper = useRef(null);
+  const modifierPressedRef = useRef(false);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [insertCandidateEdgeId, setInsertCandidateEdgeId] = useState(null);
+
+  useEffect(() => {
+    const isInsertModifierKey = (key) => key === 'Control' || key === 'Meta';
+
+    const onKeyDown = (event) => {
+      if (isInsertModifierKey(event.key)) {
+        modifierPressedRef.current = true;
+      }
+    };
+
+    const onKeyUp = (event) => {
+      if (isInsertModifierKey(event.key)) {
+        modifierPressedRef.current = false;
+        setInsertCandidateEdgeId(null);
+      }
+    };
+
+    const clearModifier = () => {
+      modifierPressedRef.current = false;
+      setInsertCandidateEdgeId(null);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        clearModifier();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', clearModifier);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', clearModifier);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
   const {
     nodes,
     edges,
@@ -135,7 +175,7 @@ export const PipelineUI = ({
         data: getInitNodeData(nodeID, type),
       };
 
-      const modifierHeld = isInsertModifierHeld(event);
+      const modifierHeld = modifierPressedRef.current;
       if (modifierHeld) {
         const nearestEdge = findNearestEdge(position, nodes, edges);
         const handles = resolveHandlesForInsert(type, nodeID);
@@ -188,7 +228,7 @@ export const PipelineUI = ({
 
       event.dataTransfer.dropEffect = 'move';
 
-      if (!isInsertModifierHeld(event) || !reactFlowInstance) {
+      if (!modifierPressedRef.current || !reactFlowInstance) {
         clearInsertHighlight();
         return;
       }

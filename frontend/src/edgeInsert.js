@@ -33,10 +33,7 @@ const SOURCE_HANDLE_SUFFIX = {
   merge: 'out',
 };
 
-export const EDGE_INSERT_THRESHOLD = 88;
-
-export const isInsertModifierHeld = (event) =>
-  Boolean(event.metaKey || event.ctrlKey);
+export const EDGE_INSERT_THRESHOLD = 118;
 
 const nodeCenter = (node) => ({
   x: node.position.x + NODE_CENTER_OFFSET.x,
