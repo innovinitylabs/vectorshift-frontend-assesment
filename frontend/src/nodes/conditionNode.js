@@ -1,25 +1,35 @@
 import { useState } from 'react';
 import { Position } from 'reactflow';
 import { BaseNode } from './BaseNode';
-import { contentRegionTop, centeredContentHandleStyle } from './handleLayout';
+import { contentRegionTop } from './handleLayout';
 
 const CONDITION_HANDLES = [
   {
     type: 'target',
     position: Position.Left,
-    idSuffix: 'input',
-    style: centeredContentHandleStyle(),
+    idSuffix: 'a',
+    label: 'A',
+    style: { top: contentRegionTop(0.14) },
+  },
+  {
+    type: 'target',
+    position: Position.Left,
+    idSuffix: 'b',
+    label: 'B',
+    style: { top: contentRegionTop(0.78) },
   },
   {
     type: 'source',
     position: Position.Right,
     idSuffix: 'true',
+    label: 'True',
     style: { top: contentRegionTop(0.18) },
   },
   {
     type: 'source',
     position: Position.Right,
     idSuffix: 'false',
+    label: 'False',
     style: { top: contentRegionTop(0.82) },
   },
 ];
@@ -34,7 +44,7 @@ export const ConditionNode = ({ id }) => {
       handles={CONDITION_HANDLES}
       className="node--condition"
     >
-      <div className="node-field">
+      <div className="node-field node-field--operator">
         <label className="node-label">Operator</label>
         <select
           className="node-select"

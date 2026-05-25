@@ -38,7 +38,7 @@
 }
 
 .node--condition {
-  min-height: 104px;
+  min-height: 128px;
 }
 
 .node--condition .node__body {
@@ -53,6 +53,47 @@
 .node--math .node__body {
   padding-top: 12px;
   padding-bottom: 14px;
+}
+
+.node--merge {
+  min-height: 128px;
+}
+
+.node--merge .node__body {
+  padding-top: 12px;
+  padding-bottom: 14px;
+}
+
+.node--handles-labeled .node__body {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+.node-handle-label {
+  position: absolute;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--node-muted);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.node-handle-label--left {
+  left: 16px;
+}
+
+.node-handle-label--right {
+  right: 16px;
+  text-align: right;
+}
+
+.node--condition .node-field--operator {
+  margin-top: 2px;
 }
 
 .node--text {

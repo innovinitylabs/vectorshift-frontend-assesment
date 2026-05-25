@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { Handle, Position } from 'reactflow';
 import { centeredContentHandleStyle } from './handleLayout';
 import './nodes.css';
@@ -22,18 +23,43 @@ export const BaseNode = ({
   children,
   className = '',
 }) => {
+  const hasHandleLabels = handles.some((handle) => handle.label);
+
   return (
-    <div className={`node ${className}`.trim()}>
+    <div
+      className={[
+        'node',
+        className,
+        hasHandleLabels ? 'node--handles-labeled' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       {handles.map((handle) => {
         const handleId = resolveHandleId(id, handle);
+        const position = handle.position ?? defaultPosition(handle.type);
+        const style = resolveHandleStyle(handle);
+        const isLeft = position === Position.Left;
+
         return (
-          <Handle
-            key={handleId}
-            type={handle.type}
-            position={handle.position ?? defaultPosition(handle.type)}
-            id={handleId}
-            style={resolveHandleStyle(handle)}
-          />
+          <Fragment key={handleId}>
+            <Handle
+              type={handle.type}
+              position={position}
+              id={handleId}
+              style={style}
+            />
+            {handle.label ? (
+              <span
+                className={`node-handle-label node-handle-label--${
+                  isLeft ? 'left' : 'right'
+                }`}
+                style={{ top: style.top }}
+              >
+                {handle.label}
+              </span>
+            ) : null}
+          </Fragment>
         );
       })}
       <div className="node__header">

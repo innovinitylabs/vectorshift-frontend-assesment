@@ -34,6 +34,7 @@ const buildVariableHandles = (variables) => {
     type: 'target',
     position: Position.Left,
     idSuffix: name,
+    label: name,
     style: {
       top: contentRegionTop((index + 1) / (count + 1)),
     },

@@ -8,18 +8,21 @@ const MATH_HANDLES = [
     type: 'target',
     position: Position.Left,
     idSuffix: 'a',
+    label: 'A',
     style: { top: contentRegionTop(0.14) },
   },
   {
     type: 'target',
     position: Position.Left,
     idSuffix: 'b',
+    label: 'B',
     style: { top: contentRegionTop(0.78) },
   },
   {
     type: 'source',
     position: Position.Right,
     idSuffix: 'result',
+    label: 'Result',
     style: { top: contentRegionTop(0.5) },
   },
 ];
