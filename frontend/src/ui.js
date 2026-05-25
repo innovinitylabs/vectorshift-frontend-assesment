@@ -3,7 +3,8 @@
 // --------------------------------------------------
 
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import ReactFlow, { Background, MiniMap, MarkerType } from 'reactflow';
+import { isEdgeDisabled } from './store';
+import ReactFlow, { Background, MiniMap } from 'reactflow';
 import { useStore } from './store';
 import { shallow } from 'zustand/shallow';
 import { InputNode } from './nodes/inputNode';
@@ -29,14 +30,20 @@ import 'reactflow/dist/style.css';
 const gridSize = 20;
 const backgroundGap = 32;
 const proOptions = { hideAttribution: true };
-const defaultEdgeOptions = {
-  type: 'smoothstep',
-  animated: true,
-  markerEnd: {
-    type: MarkerType.Arrow,
-    height: '20px',
-    width: '20px',
-  },
+const viewportTransition = { duration: 220 };
+const fitViewOptions = { padding: 0.18, duration: 320 };
+
+const isEditableTarget = (target) => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  const tag = target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    return true;
+  }
+
+  return target.isContentEditable;
 };
 const nodeTypes = {
   customInput: InputNode,
@@ -56,9 +63,11 @@ const selector = (state) => ({
   getNodeID: state.getNodeID,
   addNode: state.addNode,
   insertNodeOnEdge: state.insertNodeOnEdge,
+  removeNode: state.removeNode,
   onNodesChange: state.onNodesChange,
   onEdgesChange: state.onEdgesChange,
   onConnect: state.onConnect,
+  isValidConnection: state.isValidConnection,
 });
 
 const DRAG_NODE_TYPE_PREFIX = 'application/reactflow-node:';
@@ -103,8 +112,15 @@ export const PipelineUI = ({
 }) => {
   const reactFlowWrapper = useRef(null);
   const modifierPressedRef = useRef(false);
+  const deleteDockRef = useRef(null);
+  const edgeReconnectSucceededRef = useRef(false);
+  const draggingNodeIdRef = useRef(null);
+  const deleteZoneHoverRef = useRef(false);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [insertCandidateEdgeId, setInsertCandidateEdgeId] = useState(null);
+  const [draggingNodeId, setDraggingNodeId] = useState(null);
+  const [deleteZoneHover, setDeleteZoneHover] = useState(false);
+  const [edgeContextMenu, setEdgeContextMenu] = useState(null);
 
   useEffect(() => {
     const isInsertModifierKey = (key) => key === 'Control' || key === 'Meta';
@@ -151,20 +167,174 @@ export const PipelineUI = ({
     getNodeID,
     addNode,
     insertNodeOnEdge,
+    removeNode,
     onNodesChange,
     onEdgesChange,
     onConnect,
+    isValidConnection,
   } = useStore(selector, shallow);
 
-  const edgesForRender = useMemo(
+  const defaultEdgeOptions = useMemo(
+    () => ({
+      type: 'smoothstep',
+      animated: true,
+      selectable: true,
+      deletable: true,
+      focusable: true,
+      updatable: true,
+    }),
+    []
+  );
+
+  const nodesForCanvas = useMemo(
     () =>
-      edges.map((edge) =>
-        edge.id === insertCandidateEdgeId
-          ? { ...edge, className: 'edge-insert-candidate' }
-          : edge
-      ),
+      nodes.map((node) => {
+        if (node.id !== draggingNodeId || !deleteZoneHover) {
+          return node;
+        }
+
+        return {
+          ...node,
+          className: [node.className, 'pipeline-node--delete-capture']
+            .filter(Boolean)
+            .join(' '),
+        };
+      }),
+    [nodes, draggingNodeId, deleteZoneHover]
+  );
+
+  const handleNodesChange = useCallback(
+    (changes) => {
+      const dragNodeId = draggingNodeIdRef.current;
+      if (deleteZoneHoverRef.current && dragNodeId) {
+        const filtered = changes.filter(
+          (change) => !(change.type === 'position' && change.id === dragNodeId)
+        );
+        if (filtered.length !== changes.length) {
+          if (filtered.length > 0) {
+            onNodesChange(filtered);
+          }
+          return;
+        }
+      }
+      onNodesChange(changes);
+    },
+    [onNodesChange]
+  );
+
+  const edgesForCanvas = useMemo(
+    () =>
+      edges.map((edge) => {
+        const disabled = isEdgeDisabled(edge);
+        return {
+          ...edge,
+          animated: disabled ? false : edge.animated ?? true,
+          className: [
+            edge.className,
+            disabled ? 'edge-connection--disabled' : '',
+            edge.id === insertCandidateEdgeId ? 'edge-insert-candidate' : '',
+          ]
+            .filter(Boolean)
+            .join(' '),
+          selectable: edge.selectable ?? true,
+          deletable: edge.deletable ?? true,
+          focusable: edge.focusable ?? true,
+          updatable: edge.updatable ?? true,
+        };
+      }),
     [edges, insertCandidateEdgeId]
   );
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      if (event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
+
+      const key = event.key;
+
+      if (key === 'f' || key === 'F') {
+        event.preventDefault();
+        reactFlowInstance?.fitView(fitViewOptions);
+        return;
+      }
+
+      if (key === '=' || key === '+') {
+        event.preventDefault();
+        reactFlowInstance?.zoomIn(viewportTransition);
+        return;
+      }
+
+      if (key === '-' || key === '_') {
+        event.preventDefault();
+        reactFlowInstance?.zoomOut(viewportTransition);
+        return;
+      }
+
+      if (key === 'g' || key === 'G') {
+        event.preventDefault();
+        onSnapToggle?.();
+        return;
+      }
+
+      if (key === 'l' || key === 'L') {
+        event.preventDefault();
+        onInteractiveChange?.(!isInteractive);
+        return;
+      }
+
+      if (key === 'Tab') {
+        event.preventDefault();
+        onToggleControlsCollapse?.();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [
+    reactFlowInstance,
+    onSnapToggle,
+    onInteractiveChange,
+    isInteractive,
+    onToggleControlsCollapse,
+  ]);
+
+  useEffect(() => {
+    if (!edgeContextMenu) return undefined;
+
+    const closeMenu = () => setEdgeContextMenu(null);
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') closeMenu();
+    };
+
+    const timer = window.setTimeout(() => {
+      document.addEventListener('click', closeMenu);
+      document.addEventListener('keydown', onKeyDown);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('click', closeMenu);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [edgeContextMenu]);
+
+  const isPointInDeleteDock = useCallback((clientX, clientY) => {
+    const dock = deleteDockRef.current;
+    if (!dock) return false;
+
+    const rect = dock.getBoundingClientRect();
+    return (
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom
+    );
+  }, []);
 
   const getInitNodeData = (nodeID, type) => {
     const nodeData = { id: nodeID, nodeType: `${type}` };
@@ -296,6 +466,92 @@ export const PipelineUI = ({
     [isInteractive, reactFlowInstance, nodes, edges, clearInsertHighlight]
   );
 
+  const onNodeDragStart = useCallback(
+    (_event, node) => {
+      if (!isInteractive) return;
+      draggingNodeIdRef.current = node.id;
+      deleteZoneHoverRef.current = false;
+      setDraggingNodeId(node.id);
+      setDeleteZoneHover(false);
+    },
+    [isInteractive]
+  );
+
+  const onNodeDrag = useCallback(
+    (event) => {
+      const dragNodeId = draggingNodeIdRef.current;
+      if (!dragNodeId) return;
+
+      const inDeleteDock = isPointInDeleteDock(event.clientX, event.clientY);
+      deleteZoneHoverRef.current = inDeleteDock;
+      setDeleteZoneHover(inDeleteDock);
+    },
+    [isPointInDeleteDock]
+  );
+
+  const onNodeDragStop = useCallback(
+    (event, node) => {
+      if (isPointInDeleteDock(event.clientX, event.clientY)) {
+        removeNode(node.id);
+      }
+      draggingNodeIdRef.current = null;
+      deleteZoneHoverRef.current = false;
+      setDraggingNodeId(null);
+      setDeleteZoneHover(false);
+    },
+    [isPointInDeleteDock, removeNode]
+  );
+
+  const onEdgeUpdateStart = useCallback((_event, edge) => {
+    edgeReconnectSucceededRef.current = false;
+    useStore.getState().setReconnectingEdgeId(edge.id);
+  }, []);
+
+  const onEdgeUpdate = useCallback((oldEdge, newConnection) => {
+    const updated = useStore.getState().updateEdgeConnection(oldEdge, newConnection);
+    if (updated) {
+      edgeReconnectSucceededRef.current = true;
+    }
+  }, []);
+
+  const onEdgeContextMenu = useCallback((event, edge) => {
+    event.preventDefault();
+    setEdgeContextMenu({
+      edgeId: edge.id,
+      x: event.clientX,
+      y: event.clientY,
+      disabled: isEdgeDisabled(edge),
+    });
+  }, []);
+
+  const handleEdgeMenuToggle = useCallback(() => {
+    if (!edgeContextMenu?.edgeId) return;
+    useStore.getState().toggleEdgeDisabled(edgeContextMenu.edgeId);
+    setEdgeContextMenu(null);
+  }, [edgeContextMenu]);
+
+  const handleEdgeMenuDelete = useCallback(() => {
+    if (!edgeContextMenu?.edgeId) return;
+    useStore.getState().removeEdge(edgeContextMenu.edgeId);
+    setEdgeContextMenu(null);
+  }, [edgeContextMenu]);
+
+  const onEdgeUpdateEnd = useCallback((_event, edge) => {
+    if (!edgeReconnectSucceededRef.current) {
+      useStore.getState().removeEdge(edge.id);
+    }
+    useStore.getState().clearReconnectingEdgeId();
+    edgeReconnectSucceededRef.current = false;
+  }, []);
+
+  const deleteDockClassName = [
+    'pipeline-delete-dock',
+    draggingNodeId ? 'is-active' : '',
+    deleteZoneHover ? 'is-drop-target' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
       ref={reactFlowWrapper}
@@ -303,13 +559,21 @@ export const PipelineUI = ({
       onDragLeave={clearInsertHighlight}
     >
       <ReactFlow
-        nodes={nodes}
-        edges={edgesForRender}
-        onNodesChange={onNodesChange}
+        nodes={nodesForCanvas}
+        edges={edgesForCanvas}
+        onNodesChange={handleNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        isValidConnection={isValidConnection}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
+        onEdgeUpdate={onEdgeUpdate}
+        onEdgeUpdateStart={onEdgeUpdateStart}
+        onEdgeUpdateEnd={onEdgeUpdateEnd}
+        onEdgeContextMenu={onEdgeContextMenu}
         onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
         proOptions={proOptions}
@@ -317,7 +581,12 @@ export const PipelineUI = ({
         snapGrid={[gridSize, gridSize]}
         nodesDraggable={isInteractive}
         nodesConnectable={isInteractive}
+        nodesFocusable={isInteractive}
+        edgesFocusable={isInteractive}
+        edgesUpdatable={isInteractive}
         elementsSelectable={isInteractive}
+        deleteKeyCode={isInteractive ? ['Backspace', 'Delete'] : null}
+        edgeUpdaterRadius={12}
         connectionLineType="smoothstep"
         defaultEdgeOptions={defaultEdgeOptions}
       >
@@ -334,6 +603,7 @@ export const PipelineUI = ({
           onToggleCollapse={onToggleControlsCollapse}
           lockWiggle={lockWiggle}
           onInteractiveChange={onInteractiveChange}
+          isInteractive={isInteractive}
         />
         <MiniMap
           className="pipeline-minimap"
@@ -350,6 +620,52 @@ export const PipelineUI = ({
           zoomable
         />
       </ReactFlow>
+      <div
+        ref={deleteDockRef}
+        className={deleteDockClassName}
+        aria-hidden={!draggingNodeId}
+        aria-label="Drop node here to delete"
+      >
+        <svg
+          className="pipeline-delete-dock__icon"
+          viewBox="0 0 24 24"
+          width="18"
+          height="18"
+          aria-hidden="true"
+        >
+          <path
+            fill="currentColor"
+            d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm3 0h2v9h-2V9zm-6 0h2v9H7V9zM6 20h12v2H6v-2z"
+          />
+        </svg>
+        <span className="pipeline-delete-dock__label">Delete</span>
+      </div>
+      {edgeContextMenu && (
+        <div
+          className="pipeline-edge-menu"
+          style={{ top: edgeContextMenu.y, left: edgeContextMenu.x }}
+          role="menu"
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="pipeline-edge-menu__item"
+            role="menuitem"
+            onClick={handleEdgeMenuToggle}
+          >
+            {edgeContextMenu.disabled ? 'Enable connection' : 'Disable connection'}
+          </button>
+          <div className="pipeline-edge-menu__separator" role="separator" />
+          <button
+            type="button"
+            className="pipeline-edge-menu__item pipeline-edge-menu__item--danger"
+            role="menuitem"
+            onClick={handleEdgeMenuDelete}
+          >
+            Delete connection
+          </button>
+        </div>
+      )}
     </div>
   );
 };

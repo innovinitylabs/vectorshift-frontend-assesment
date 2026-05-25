@@ -1,7 +1,7 @@
-import { useState, useMemo, useRef, useLayoutEffect, useCallback } from 'react';
-import { Position } from 'reactflow';
+import { useState, useMemo, useRef, useLayoutEffect, useCallback, useEffect } from 'react';
+import { Position, useUpdateNodeInternals } from 'reactflow';
 import { BaseNode } from './BaseNode';
-import { contentRegionTop } from './handleLayout';
+import { distributedVariableTops } from './handleLayout';
 
 const VARIABLE_REGEX = /{{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*}}/g;
 
@@ -29,22 +29,23 @@ const parseVariables = (text) => {
 };
 
 const buildVariableHandles = (variables) => {
-  const count = variables.length;
+  const tops = distributedVariableTops(variables.length);
   return variables.map((name, index) => ({
     type: 'target',
     position: Position.Left,
     idSuffix: name,
-    style: {
-      top: contentRegionTop((index + 1) / (count + 1)),
-    },
+    label: name,
+    style: { top: tops[index] },
   }));
 };
 
 export const TextNode = ({ id, data }) => {
   const [currText, setCurrText] = useState(data?.text || '{{input}}');
   const textareaRef = useRef(null);
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const variables = useMemo(() => parseVariables(currText), [currText]);
+  const variableKey = variables.join('\0');
 
   const handles = useMemo(
     () => [...buildVariableHandles(variables), OUTPUT_HANDLE],
@@ -69,6 +70,13 @@ export const TextNode = ({ id, data }) => {
   useLayoutEffect(() => {
     syncTextareaSize();
   }, [currText, syncTextareaSize]);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      updateNodeInternals(id);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [id, variableKey, currText, updateNodeInternals]);
 
   return (
     <BaseNode id={id} title="Text" handles={handles} className="node--text">

@@ -26,10 +26,12 @@ export const SubmitButton = () => {
     setErrorMessage('');
 
     try {
+      const activeEdges = edges.filter((edge) => edge?.data?.disabled !== true);
+
       const response = await fetch(`${API_URL}/pipelines/parse`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nodes, edges }),
+        body: JSON.stringify({ nodes, edges: activeEdges }),
       });
 
       if (!response.ok) {
