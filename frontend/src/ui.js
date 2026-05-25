@@ -131,11 +131,15 @@ export const PipelineUI = ({ snapToGrid = true }) => {
         <Controls />
         <MiniMap
           className="pipeline-minimap"
-          nodeColor="#334155"
-          nodeStrokeColor="#475569"
+          style={{ width: 128, height: 96 }}
+          offsetScale={10}
+          nodeColor="#3d4f66"
+          nodeStrokeColor="#64748b"
           nodeStrokeWidth={1}
-          maskColor="rgba(11, 17, 32, 0.72)"
-          maskStrokeColor="rgba(56, 189, 248, 0.35)"
+          nodeBorderRadius={4}
+          maskColor="rgba(11, 17, 32, 0.65)"
+          maskStrokeColor="rgba(56, 189, 248, 0.45)"
+          maskStrokeWidth={1.5}
           pannable
           zoomable
         />
