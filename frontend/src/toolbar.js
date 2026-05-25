@@ -58,9 +58,22 @@ const NODE_PALETTE = [
   },
 ];
 
+const APP_NAME = 'VectorShift Workflow Editor';
+
 export const PipelineToolbar = ({ locked, onLockedDragAttempt }) => {
   return (
     <header className="pipeline-toolbar">
+      <div className="pipeline-toolbar__brand">
+        <img
+          className="pipeline-toolbar__logo"
+          src={`${process.env.PUBLIC_URL}/vectorshift.avif`}
+          alt="VectorShift"
+          width={28}
+          height={28}
+          draggable={false}
+        />
+        <span className="pipeline-toolbar__title">{APP_NAME}</span>
+      </div>
       <div className="pipeline-toolbar__nodes">
         {NODE_PALETTE.map((node) => (
           <DraggableNode

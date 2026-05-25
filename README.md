@@ -1,6 +1,6 @@
-# VectorShift Frontend Technical Assessment
+# VectorShift Workflow Editor
 
-A polished visual workflow editor built with React Flow, plus a FastAPI service that analyzes pipeline graphs for DAG validity.
+Frontend technical assessment — a polished visual workflow editor built with React Flow, plus a FastAPI service that analyzes pipeline graphs for DAG validity.
 
 ## Overview
 

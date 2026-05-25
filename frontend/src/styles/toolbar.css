@@ -16,6 +16,10 @@
 
 .pipeline-toolbar {
   flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px 20px;
   padding: 10px 16px 14px;
   background: #111827;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
@@ -23,11 +27,42 @@
   z-index: 20;
 }
 
+.pipeline-toolbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding-right: 4px;
+  border-right: 1px solid rgba(148, 163, 184, 0.14);
+  margin-right: 2px;
+}
+
+.pipeline-toolbar__logo {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pipeline-toolbar__title {
+  font-family: 'Syne', 'DM Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #e2e8f0;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .pipeline-toolbar__nodes {
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
+  min-width: 0;
 }
 
 /* Toolbar palette item — chip stays fixed size; preview expands below */

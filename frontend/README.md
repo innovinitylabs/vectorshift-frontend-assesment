@@ -1,6 +1,6 @@
 # Frontend
 
-React workflow editor for the VectorShift technical assessment.
+VectorShift Workflow Editor — React workflow canvas for the VectorShift technical assessment.
 
 See the [repository README](../README.md) for features, setup, and demo notes.
 
