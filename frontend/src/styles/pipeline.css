@@ -31,14 +31,39 @@
   box-shadow:
     0 0 0 1px rgba(34, 211, 238, 0.25),
     0 0 6px rgba(34, 211, 238, 0.2);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transform-origin: center;
+  will-change: transform;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.pipeline-canvas .react-flow__handle:hover {
-  transform: scale(1.12);
+.pipeline-canvas .react-flow__handle-left:hover {
+  transform: translate(-1px, -50%) scale(1.03);
   box-shadow:
-    0 0 0 1px rgba(34, 211, 238, 0.35),
-    0 0 8px rgba(34, 211, 238, 0.28);
+    0 0 0 1px rgba(34, 211, 238, 0.32),
+    0 0 7px rgba(34, 211, 238, 0.26);
+}
+
+.pipeline-canvas .react-flow__handle-right:hover {
+  transform: translate(1px, -50%) scale(1.03);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.32),
+    0 0 7px rgba(34, 211, 238, 0.26);
+}
+
+.pipeline-canvas .react-flow__handle-top:hover {
+  transform: translate(-50%, -1px) scale(1.03);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.32),
+    0 0 7px rgba(34, 211, 238, 0.26);
+}
+
+.pipeline-canvas .react-flow__handle-bottom:hover {
+  transform: translate(-50%, 1px) scale(1.03);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.32),
+    0 0 7px rgba(34, 211, 238, 0.26);
 }
 
 @keyframes lock-wiggle {
